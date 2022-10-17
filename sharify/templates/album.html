@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}Sharify - Album Search{% endblock %}
+
+{% block content %}
+<div class="container">
+	<section data-bs-version="5.1" class="gallery4 cid-sPTNLFvAOB" id="gallery4-z" style="background: white;">
+		<div style="min-height: 75vh;">
+			<br>
+			<center>
+				<h2>Album Search</h2>
+				<br>
+				<input style="margin: 10px auto;" class="form-text col-8" type="text" name="album" hx-get="{% url 'sharify:get_album' %}" hx-trigger="keyup" hx-target="#search-results">
+				</input>
+				<br>
+				<div id="search-results">
+				</div>
+			</center>
+			<br>
+		</div>
+	</section>
+</div>
+{% endblock %}
