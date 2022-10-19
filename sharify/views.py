@@ -37,6 +37,7 @@ def find_albums(artist, from_year = None, to_year = None):
     results = list(results)
     return results
 
+#why not
 def find_track_by_name(track):
     query = Musicdata.objects.filter(track_name__contains = track).values('track_id')
     resp = list(query)
