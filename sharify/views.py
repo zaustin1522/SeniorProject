@@ -62,7 +62,7 @@ def find_track_by_name(track):
     results = [songs[i:i+4] for i in range(0, len(songs), 4)]
     return {
 	'results': results,
-	'type': "track"
+    'type': "track"
     }
 
 def find_album_by_name(album):
@@ -135,4 +135,7 @@ def homepage(request):
 
 def show_login(request):
     return render(request, 'login.html', {})
+
+def show_userprofile(request):
+    return render(request, 'userprofile.html', {})
 

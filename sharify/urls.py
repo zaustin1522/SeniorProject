@@ -9,6 +9,7 @@ urlpatterns = [
     path('search/track/', views.get_track, name='get_track'),
     path('', views.homepage, name='homepage'),
     path('login/', views.show_login, name='login'),
-    path('todays_top_hits', views.todays_top_hits, name='todays_top_hits'),
+    path('userprofile/', views.show_userprofile, name="userprofile"),
+    path('todays_top_hits', views.todays_top_hits, name='todays_top_hits')
 ]
 
