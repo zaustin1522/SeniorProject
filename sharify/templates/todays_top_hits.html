@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+	<style>
+		body {
+			background-color: #333;
+			background-repeat: repeat;
+		}
+
+		h1 {
+			font-family: Arial, sans-serif;
+			color: #1ed760;
+			text-align: Center;
+		}
+
+		p {
+			font-family: Arial, sans-serif;
+			font-size: 14px;
+			text-align: Center;
+			color: #1ed760;
+			letter-spacing: 2px;
+		}
+		.flex-container {
+			column-count: 5;
+		}
+
+		.flex-container > div {
+			width: 100px;
+			margin: 10px;
+			text-align: center;
+			line-height: 75px;
+			font-size: 30px;
+		}
+
+		ul {
+			list-style-type: none;
+			margin: 0;
+			padding: 0;
+			overflow: hidden;
+			background-color: #333;
+		}
+
+		li {
+			float: left;
+		}
+
+		li a {
+			display: block;
+			color: white;
+			text-align: center;
+			padding: 14px 16px;
+			text-decoration: none;
+		}
+
+		li a:hover:not(.active) {
+			background-color: #111;
+		}
+
+		.active {
+			background-color: #04AA6D;
+		}
+	</style>
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	</head>
+	<body>
+		<h1>Today's Top Hits</h1>
+		<p>Below are Today's Top Hits!</p>
+	</body>
+
+	{% if tracks %}
+	<div class="flex-container">
+		{% for track in tracks %}
+			<div>
+				<iframe src="https://open.spotify.com/embed/track/{{ track }}" width="300" height="380" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
+			</div>
+		{% endfor %}
+	</div>
+	{% endif %}
+</html>
