@@ -1,10 +1,6 @@
 {% load static %}
 <!DOCTYPE html>
 <html>
-
-    {% block style %}
-    {% endblock %}
-
     <head>
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -41,7 +37,38 @@
     <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
 
         <!-- Begin Header / Navbar -->
-        {%include 'navbar.html' %}
+        <section data-bs-version="5.1" class="menu menu1 cid-sPTNINWSSI" once="menu" id="menu1-y">
+            <nav class="navbar navbar-dropdown navbar-expand-lg">
+                <div class="container-fluid">
+                    <button class="navbar-toggler" type="button" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbarSupportedContent" data-bs-target="#navbarSupportedContent" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+                        <div class="hamburger">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </button>
+                    <div class="navbar-brand">
+                        <span class="navbar-caption-wrap"><a class="navbar-caption text-black display-5" href="/"><strong><br>Sharify</strong><strong><br></strong>
+                        </a></span>
+                    </div>
+                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                        <ul class="navbar-nav nav-dropdown" data-app-modern-menu="true">
+                            <li class="nav-item">
+                                <a class="nav-link link text-black display-4" href="/search/artist/">Search by Artist<br></a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link link text-black display-4" href="/search/album/">Search by Album<br></a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link link text-black display-4" href="/search/track/">Search by Title<br></a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="navbar-buttons section-btn"><a class="btn btn-primary display-7" href="/login">Log In<br></a></div>
+                </div>
+            </nav>
+        </section>
         <!-- End Header / Navbar -->
 
         {% block content %}
