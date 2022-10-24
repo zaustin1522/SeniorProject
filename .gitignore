@@ -131,5 +131,5 @@ dmypy.json
 .pyre/
 .DS_Store
 myenv/pyvenv.cfg
-myenv/pyvenv.cfg
 *.cfg
+sharify/migrations/0001_initial.py
