@@ -25,4 +25,14 @@ class Musicdata(models.Model):
     tempo = models.FloatField()
     duration_ms  = models.IntegerField()
 
-
+class UserProfile(models.Model):
+    name = models.CharField(max_length=50, default="user")
+    username = models.CharField(max_length=50, default="user")
+    dateOfBirth = models.DateTimeField()
+    email = models.EmailField(max_length=254)
+    biography = models.TextField()
+    profilePicture = models.ImageField()
+    spotifyUserID = models.CharField(max_length=50)
+    spotifyFavArtist = models.CharField(max_length=50)
+    spotifyFriendList = models.TextField()
+    
