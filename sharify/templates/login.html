@@ -8,52 +8,10 @@
         <div class="row align-left">
             <div class="col-md-12 col-lg-5 block-content pe-md-3" style="display:flex; flex-direction: row; width: 70vw;">
                 <div class="form-block" style="margin: 0 10px;">
-                    <div class="bg"></div>
-                    <div class="form-wrap" data-form-type="formoid">
-                        <form action="" method="POST" class="form form-with-styler" data-form-title="Account Form">
-                            <div class="row">
-                                <div hidden="hidden" data-form-alert="" class="alert alert-success col-12">Thanks for
-                                    filling out the form!</div>
-                                <div hidden="hidden" data-form-alert-danger="" class="alert alert-danger col-12"></div>
-                            </div>
-                            <div class="dragArea row">
-                                <div class="col-md-12">
-                                    <h4 class="fonts-style mb-2 fonts-style display-5"><strong>Log in</strong></h4>
-                                    <p class="mb-4 form-text fonts-style display-7">[put the Django Spotify API for logging in here]<br></p>
-                                </div>
-                                <div class="col-md-12 form-group mb-3 " data-for="name">
-                                    <input type="text" name="name" placeholder="Placeholder" data-form-field="Name" required="required" class="form-control input display-7" id="name-form02-2">
-                                </div>
-                                <div class="col-md-12 input-group-btn mt-2">
-                                    <button type="submit" class="btn btn-primary btn-form btn-bgr display-4">Submit</button>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
+                    {% include 'loginform.html' %}
                 </div>
                 <div class="form-block" style="margin: 0 10px;">
-                    <div class="bg"></div>
-                    <div class="form-wrap" data-form-type="formoid">
-                        <form action="" method="POST" class="form form-with-styler" data-form-title="Registration Form">
-                            <div class="row">
-                                <div hidden="hidden" data-form-alert="" class="alert alert-success col-12">Thanks for
-                                    filling out the form!</div>
-                                <div hidden="hidden" data-form-alert-danger="" class="alert alert-danger col-12"></div>
-                            </div>
-                            <div class="dragArea row">
-                                <div class="col-md-12">
-                                    <h4 class="fonts-style mb-2 fonts-style display-5"><strong>Sign Up</strong></h4>
-                                    <p class="mb-4 form-text fonts-style display-7">[put the Django Spotify API for registration here]</p>
-                                </div>
-                                <div class="col-md-12 form-group mb-3 " data-for="name">
-                                    <input type="text" name="name" placeholder="Placeholder" data-form-field="Name" required="required" class="form-control input display-7" id="name-form02-5">
-                                </div>
-                                <div class="col-md-12 input-group-btn mt-2">
-                                    <button type="submit" class="btn btn-primary btn-form btn-bgr display-4">Register</button>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
+                    {% include 'signupform.html' %}
                 </div>
             </div>
         </div>

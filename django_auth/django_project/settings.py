@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-@k*!+6))+w742xg3!$)&+a8xug_+6ou3%rv&^4)8-*#=mu)8&(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', 'music.officialrewind.com']
 
 
 # Application definition
