@@ -101,8 +101,8 @@ celerybeat.pid
 # SageMath parsed files
 *.sage.py
 
-# Environments
-.env
+# # Environments
+# .env
 .venv
 env/
 venv/
@@ -131,5 +131,5 @@ dmypy.json
 .pyre/
 .DS_Store
 myenv/pyvenv.cfg
-myenv/pyvenv.cfg
 *.cfg
+sharify/migrations/0001_initial.py
