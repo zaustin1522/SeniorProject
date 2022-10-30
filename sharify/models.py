@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from datetime import datetime
+from django.utils import timezone
 
 class Musicdata(models.Model):
     track_id = models.TextField()
@@ -31,7 +31,7 @@ class User(AbstractUser):
     pass
     def __str__(self):
         return self.username
-    user_dob = models.DateTimeField(blank=True, default=datetime.now)
+    user_dob = models.DateTimeField(blank=True, default=timezone.now)
     user_bio = models.TextField(blank=True, default="")
     user_avatar = models.ImageField(blank=True, default="")
     user_id = models.AutoField(primary_key=True)
