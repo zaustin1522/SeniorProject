@@ -5,7 +5,7 @@
 <section data-bs-version="5.1" class="section form2 cid-tjoJwPWkFc" id="form02-2">
     <div class="overlay" style="opacity: 0.7; background-color: rgb(22, 8, 48);"></div>
     <div class="container">
-        <div class="col-md-12 col-lg-5 block-content pe-md-3" style="width: 70vw;">
+        <div class="col-md-12 col-lg-5 block-content pe-md-3" style="width: 40vw; margin: 0 auto;">
             <div class="form-block" style="margin: 0 10px;">
                 <div class="bg"></div>
                 <div class="form-wrap" data-form-type="formoid">
@@ -14,8 +14,8 @@
                     <div class="dragArea row">
                         <div class="col-md-12">
                             <h4 class="fonts-style mb-2 fonts-style display-5"><strong>Sign Up</strong></h4>
-                            {% if form.errors %}
-                                <h5 style="color: red;">Your passwords didn't match. Please try again.</h5>
+                            {% if form.non_field_errors %} 
+                                <h6 style="color: red;">{{ form.non_field_errors }}</h6>
                             {% endif %}
                         </div>
                         <div class="col-md-12 form-group mb-3">
@@ -24,22 +24,31 @@
                                     <span class="glyphicon glyphicon-user">
                                     </span>
                                 </span>
-                                <input class="form-control" placeholder="{{ form.username.label }}" type="text"/>
+                                <input class="form-control" type="text" name="username" placeholder="Username" autofocus="" autocapitalize="none" autocomplete="username" maxlength="150" required="" id="id_username">
                             </div>
+                            {% if form.username.errors %}
+                                <h6 style="color: red;">{{ form.username.errors }}</h6>
+                            {% endif %}
                             <div class="input-group">
                                 <span class="input-group-addon" style="background-color:#b77b48; color:white">
                                     <span class="glyphicon glyphicon-user">
                                     </span>
                                 </span>
-                                <input class="form-control" placeholder="{{ form.password1.label }}" type="password"/>
+                                <input class="form-control" type="password" name="password1" placeholder="Password" autocomplete="new-password" required="" id="id_password1">
                             </div>
+                            {% if form.password1.errors %}
+                                <h6 style="color: red;">{{ form.password1.errors }}</h6>
+                            {% endif %}
                             <div class="input-group">
                                 <span class="input-group-addon" style="background-color:#b77b48; color:white">
                                     <span class="glyphicon glyphicon-user">
                                     </span>
                                 </span>
-                                <input class="form-control" placeholder="{{ form.password2.label }}" type="password"/>
+                                <input class="form-control" type="password" name="password2" placeholder="Confirm Password" autocomplete="new-password" required="" id="id_password2">
                             </div>
+                            {% if form.password2.errors %}
+                                <h6 style="color: red;">{{ form.password2.errors }}</h6>
+                            {% endif %}
                         </div>
                         <div class="col-md-12 input-group-btn mt-2">
                             <input type="submit" class="btn btn-primary btn-form btn-bgr display-4" value="Sign Up" />
