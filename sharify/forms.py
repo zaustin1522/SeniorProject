@@ -2,8 +2,9 @@
 #   Imports
 ###########################################################################################
 from django import forms
-from django.contrib.auth.models import User
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, UserChangeForm
+from django.contrib.auth import get_user_model
+User = get_user_model()
 
 #-----------------------------------------------------------------------------------------#
 class SearchForm(forms.Form):
@@ -21,3 +22,9 @@ class SignupForm(UserCreationForm):
 class LoginForm(AuthenticationForm):
     username = forms.CharField(max_length=63)
     password = forms.CharField(max_length=63, widget=forms.PasswordInput)
+
+#-----------------------------------------------------------------------------------------#
+class PasswordChangeForm(UserChangeForm):
+    class Meta:
+        model = User
+        fields = ('username', 'password')

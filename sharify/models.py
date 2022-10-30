@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from datetime import datetime
 
 class Musicdata(models.Model):
     track_id = models.TextField()
@@ -28,13 +29,13 @@ class Musicdata(models.Model):
 
 class User(AbstractUser):
     pass
-#    name = models.CharField(max_length=50, default="user")
-#    username = models.CharField(max_length=50, default="user")
-#    dateOfBirth = models.DateTimeField()
-#    email = models.EmailField(max_length=254)
-#    biography = models.TextField()
-#    profilePicture = models.ImageField()
-#    spotifyUserID = models.CharField(max_length=50)
-#    spotifyFavArtist = models.CharField(max_length=50)
-#    spotifyFriendList = models.TextField()
-
+    def __str__(self):
+        return self.username
+    user_dob = models.DateTimeField(blank=True, default=datetime.now)
+    user_bio = models.TextField(blank=True, default="")
+    user_avatar = models.ImageField(blank=True, default="")
+    user_id = models.AutoField(primary_key=True)
+    user_is_paired = models.BooleanField(default=False)
+    user_spotify_id = models.CharField(max_length=50, blank=True, null=True)
+    user_spotify_fav_artist = models.CharField(max_length=50, blank=True, null=True)
+    user_spotify_friends = models.TextField(blank=True, null=True)
