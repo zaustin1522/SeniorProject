@@ -1,27 +1,41 @@
-
+###########################################################################################
+#   Imports
+###########################################################################################
 from sharify.forms import SearchForm
 from django.shortcuts import render
 from django.http import Http404
 from .models import Musicdata
-from .forms import SearchForm
+from .forms import *
 import random
 from dotenv import load_dotenv
 from spotipy.oauth2 import SpotifyClientCredentials
 import spotipy
-
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm
+from django.urls import reverse_lazy
+from django.views import generic
+from django.contrib.auth import authenticate, login
+###########################################################################################
+#   Loading Environment and Setting Spotify Controller
+###########################################################################################
 load_dotenv()
 
-spotipy_controller = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials()) # Instantiating the Spotipy unauthenticated controller
+# Instantiating the Spotipy unauthenticated controller
+spotipy_controller = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
 
+#-----------------------------------------------------------------------------------------#
 def todays_top_hits(request):
     tracks = []
-    for item in spotipy_controller.playlist_items(playlist_id='37i9dQZF1DXcBWIGoYBM5M')['items']:  # Grabs the playlist items object and grabs dict key 'items' to get an array of tracks
+    # Grabs the playlist items object and grabs dict key 'items' to get an array of tracks
+    for item in spotipy_controller.playlist_items(playlist_id='37i9dQZF1DXcBWIGoYBM5M')['items']:
         tracks.append(item['track']['id'])
     context = {
-        'tracks': tracks[:10]   # Splits first 10 tracks
+        # Splits first 10 tracks
+        'tracks': tracks[:10]
     }
     return render(request, 'todays_top_hits.html', context)
 
+#-----------------------------------------------------------------------------------------#
 def find_albums(artist, from_year = None, to_year = None):
     query = Musicdata.objects.filter(track_artist__contains = artist)
     if from_year is not None:
@@ -52,7 +66,7 @@ def find_albums(artist, from_year = None, to_year = None):
     results = list(results)
     return results
 
-#why not
+#-----------------------------------------------------------------------------------------#
 def find_track_by_name(track):
     query = Musicdata.objects.filter(track_name__contains = track).values('track_id')
     resp = list(query)
@@ -66,6 +80,7 @@ def find_track_by_name(track):
     'type': "track"
     }
 
+#-----------------------------------------------------------------------------------------#
 def find_album_by_name(album):
     query = Musicdata.objects.filter(track_album_name__contains = album).values('track_album_id')
     temp = list(query)
@@ -81,6 +96,7 @@ def find_album_by_name(album):
 	'type': "album"
     }
 
+#-----------------------------------------------------------------------------------------#
 def get_artist(request):
     if request.method == 'POST':
         # create a form instance and populate it with data from the request:
@@ -109,6 +125,7 @@ def get_artist(request):
         form = SearchForm()
         return render(request, 'artist.html', {'form': form})
 
+#-----------------------------------------------------------------------------------------#
 def get_album(request):
     if request.method == 'GET':
         album = request.GET.get('album', None)
@@ -120,6 +137,7 @@ def get_album(request):
                 albums = find_album_by_name(album)
             return render(request, "results.html", albums)
 
+#-----------------------------------------------------------------------------------------#
 def get_track(request):
     if request.method == 'GET':
         track = request.GET.get('track', None)
@@ -131,12 +149,18 @@ def get_track(request):
                 tracks = find_track_by_name(track)
             return render(request, "results.html", tracks)
 
+#-----------------------------------------------------------------------------------------#
 def homepage(request):
     return render(request, 'home.html', {})
 
-def show_login(request):
-    return render(request, 'login.html', {})
-
+#-----------------------------------------------------------------------------------------#
 def show_userprofile(request):
     return render(request, 'userprofile.html', {})
 
+#-----------------------------------------------------------------------------------------#
+class SignUpView(generic.CreateView):
+    form_class = UserCreationForm
+    success_url = reverse_lazy("login")
+    template_name = "registration/signup.html"
+
+#-----------------------------------------------------------------------------------------#
