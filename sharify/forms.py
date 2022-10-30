@@ -2,6 +2,8 @@
 #   Imports
 ###########################################################################################
 from django import forms
+from django.contrib.auth.models import User
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 
 #-----------------------------------------------------------------------------------------#
 class SearchForm(forms.Form):
@@ -10,3 +12,12 @@ class SearchForm(forms.Form):
     to_year = forms.IntegerField(required=False)
 
 #-----------------------------------------------------------------------------------------#
+class SignupForm(UserCreationForm):
+    class Meta:
+        model = User
+        fields = ('username', 'password1', 'password2', )
+
+#-----------------------------------------------------------------------------------------#
+class LoginForm(AuthenticationForm):
+    username = forms.CharField(max_length=63)
+    password = forms.CharField(max_length=63, widget=forms.PasswordInput)

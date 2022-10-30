@@ -1,0 +1,24 @@
+<div class="bg"></div>
+<div class="form-wrap" data-form-type="formoid">
+    <form action="" method="POST" class="form form-with-styler" data-form-title="Account Form">
+        {% csrf_token %}
+        <div class="dragArea row">
+            <div class="col-md-12">
+                <h4 class="fonts-style mb-2 fonts-style display-5"><strong>Log In</strong></h4>
+            </div>
+            <div class="col-md-12 form-group mb-3">
+                {% for field in form %}
+                    <div class="input-group">
+                        <span class="input-group-addon" style="background-color:#b77b48; color:white"><span class="glyphicon glyphicon-user"></span></span>
+                        <input class="form-control" id="{{ field.id_for_label }}" maxlength="30" name="{{ field.html_name }}" placeholder="{{ field.html_name }}" value="{{ field.value }}" type="text" /> 
+                        {{ field.errors }}
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="col-md-12 input-group-btn mt-2">
+                <input type="submit" class="btn btn-primary btn-form btn-bgr display-4" value="Log In" />
+                <input type="hidden" name="next" value="{{ next }}" />
+            </div>
+        </div>
+    </form>
+</div>
