@@ -132,4 +132,4 @@ dmypy.json
 .DS_Store
 myenv/pyvenv.cfg
 *.cfg
-sharify/migrations/0001_initial.py
+#sharify/migrations/0001_initial.py
