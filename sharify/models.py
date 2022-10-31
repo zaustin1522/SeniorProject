@@ -38,7 +38,7 @@ class Playlist(models.Model):
     playlist_owner = models.CharField(max_length=500)
     date_created = models.CharField(max_length=500, default="No date")
     playlist_img = models.ImageField(blank=True, default="")
-    songs = models.ForeignKey(Musicdata)
+    songs = models.ForeignKey(Musicdata, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return self.playlist_name
