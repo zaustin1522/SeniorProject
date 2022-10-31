@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import Musicdata, User
+from .models import Musicdata, Playlist, User
 from .forms import *
 
 class Admin(UserAdmin):
@@ -12,3 +12,4 @@ class Admin(UserAdmin):
 # Register your models here.
 admin.site.register(Musicdata)
 admin.site.register(User, UserAdmin)
+admin.site.register(Playlist)
