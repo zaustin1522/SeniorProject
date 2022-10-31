@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Sharify - Login{% endblock %}
+{% block content %}   
+<section data-bs-version="5.1" class="section form2 cid-tjoJwPWkFc" id="form02-2">
+    <div class="overlay" style="opacity: 0.7; background-color: rgb(22, 8, 48);"></div>
+    <div class="container">
+        <div class="col-md-12 col-lg-5 block-content pe-md-3" style="width: 40vw; margin: 0 auto;">
+            <div class="form-block" style="margin: 0 10px;">
+                <div class="bg"></div>
+                <div class="form-wrap" data-form-type="formoid">
+                <form action="{% url 'login' %}" method="POST" class="form form-with-styler" data-form-title="Account Form">
+                    {% csrf_token %}
+                    <div class="dragArea row">
+                        <div class="col-md-12">
+                            <h4 class="fonts-style mb-2 fonts-style display-5"><strong>Log In</strong></h4>
+                            {% if form.non_field_errors %} 
+                                <h6 style="color: red;">{{ form.non_field_errors }}</h6>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-12 form-group mb-3">
+                            <div class="input-group">
+                                <span class="input-group-addon" style="background-color:#b77b48; color:white">
+                                    <span class="glyphicon glyphicon-user">
+                                    </span>
+                                </span>
+                                <input class="form-control" type="text" name="username" placeholder="Username" autofocus="" autocapitalize="none" autocomplete="username" maxlength="150" required="" id="id_username">
+                            </div>
+                            {% if form.username.errors %}
+                                <h6 style="color: red;">{{ form.username.errors }}</h6>
+                            {% endif %}
+                            <div class="input-group">
+                                <span class="input-group-addon" style="background-color:#b77b48; color:white">
+                                    <span class="glyphicon glyphicon-user">
+                                    </span>
+                                </span>
+                                <input class="form-control" type="password" name="password" placeholder="Password" autocomplete="current-password" required="" id="id_password">
+                            </div>
+                            {% if form.password.errors %}
+                                <h6 style="color: red;">{{ form.password.errors }}</h6>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-12 input-group-btn mt-2">
+                            <input type="submit" class="btn btn-primary btn-form btn-bgr display-4" value="Log In" />
+                            <input type="hidden" name="next" value="{{ next }}" />
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section data-bs-version="5.1" class="features20 cid-tjoJILG38j" id="features20-4">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="content-wrapper">
+                <div class="col-12">
+                    <div class="text-wrapper">
+                        <h2 class="section-title align-center fonts-style display-2"><strong>Why make an account?</strong></h2>
+                        <div class="item-container col-12">
+                            <div class="item flex col-12 col-md-4">
+                                <div class="icon-box">
+                                    <p class="number-text black fonts-style display-1"><strong>Full Songs</strong></p>
+                                </div>
+                                <div class="text-box">
+                                    <p class="icon-text black fonts-style m-0 display-4">No more previews. No more snippets. Get the full song, every time.</p>
+                                </div>
+                            </div>
+                            <div class="item flex col-12 col-md-4">
+                                <div class="icon-box">
+                                    <p class="number-text black fonts-style display-1"><strong>Over 4</strong></p>
+                                </div>
+                                <div class="text-box">
+                                    <p class="icon-text black fonts-style m-0 display-4">Users to share and listen with.</p>
+                                </div>
+                            </div>
+                            <div class="item flex col-12 col-md-4">
+                                <div class="icon-box">
+                                    <p class="number-text black fonts-style display-1"><strong>Song Sync</strong></p>
+                                </div>
+                                <div class="text-box">
+                                    <p class="icon-text black fonts-style m-0 display-4">Connect your account to Spotify to share your playlists across devices and keep your friends up to date on your listening trends.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

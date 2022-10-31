@@ -5,11 +5,16 @@ from sharify.forms import SearchForm
 from django.shortcuts import render
 from django.http import Http404
 from .models import Musicdata
-from .forms import SearchForm
+from .forms import *
 import random
 from dotenv import load_dotenv
 from spotipy.oauth2 import SpotifyClientCredentials
 import spotipy
+from django.urls import reverse_lazy
+from django.views import generic
+from django.contrib.auth import authenticate, login
+from django.contrib.auth import get_user_model
+User = get_user_model()
 
 ###########################################################################################
 #   Loading Environment and Setting Spotify Controller
@@ -27,7 +32,7 @@ def todays_top_hits(request):
         tracks.append(item['track']['id'])
     context = {
         # Splits first 10 tracks
-        'tracks': tracks[:10]   
+        'tracks': tracks[:10]
     }
     return render(request, 'todays_top_hits.html', context)
 
@@ -150,11 +155,13 @@ def homepage(request):
     return render(request, 'home.html', {})
 
 #-----------------------------------------------------------------------------------------#
-def show_login(request):
-    return render(request, 'login.html', {})
-
-#-----------------------------------------------------------------------------------------#
 def show_userprofile(request):
     return render(request, 'userprofile.html', {})
+
+#-----------------------------------------------------------------------------------------#
+class SignUpView(generic.CreateView):
+    form_class = SignupForm
+    success_url = reverse_lazy("login")
+    template_name = "registration/signup.html"
 
 #-----------------------------------------------------------------------------------------#
