@@ -28,6 +28,7 @@ class Musicdata(models.Model):
     duration_ms  = models.IntegerField()
 
 class User(AbstractUser):
+    pass
     def __str__(self):
         return self.username
     user_dob = models.DateTimeField(blank=True, default=timezone.now)
