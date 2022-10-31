@@ -8,6 +8,9 @@ class Admin(UserAdmin):
     form = PasswordChangeForm
     model = User
     list_display = ["username", "password",]
+    fieldsets = UserAdmin.fieldsets + (
+        (None, {'fields': ('some_extra_data',)}),
+    )
 
 # Register your models here.
 admin.site.register(Musicdata)
