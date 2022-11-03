@@ -38,10 +38,17 @@ class Playlist(models.Model):
     playlist_owner = models.CharField(max_length=500)
     date_created = models.CharField(max_length=500, default="No date")
     playlist_img = models.ImageField(blank=True, default="")
-    songs = models.ForeignKey(Musicdata, on_delete=models.CASCADE, null=True, blank=True)
+    songs = models.ForeignKey(Musicdata, on_delete=models.DO_NOTHING, null=True, blank=True)
 
     def __str__(self):
         return self.playlist_name
+
+class UserToken(models.Model):
+    access_token = models.TextField(blank=True, null=True)
+    token_type = models.TextField(default="Bearer")
+    expires_in = models.IntegerField(default=0)
+    state = models.TextField(blank=True, null=True)
+    expires_at = models.DateTimeField(blank=True, null=True)
 
 class User(AbstractUser):
     pass
@@ -52,6 +59,8 @@ class User(AbstractUser):
     user_avatar = models.ImageField(blank=True, default="")
     user_id = models.AutoField(primary_key=True)
     user_is_paired = models.BooleanField(default=False)
+    user_token = models.OneToOneField(UserToken, on_delete=models.CASCADE, blank=True, null=True)
     user_spotify_id = models.CharField(max_length=50, blank=True, null=True)
     user_spotify_fav_artist = models.CharField(max_length=50, blank=True, null=True)
     user_spotify_friends = models.TextField(blank=True, null=True)
+
