@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 import os
 from pathlib import Path
+from dotenv import load_dotenv
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -128,6 +130,7 @@ LOGOUT_REDIRECT_URL = "/"
 AUTH_USER_MODEL = 'sharify.User'
 
 AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',
     'social_core.backends.spotify.SpotifyOAuth2',
 )
 
@@ -165,3 +168,6 @@ SOCIAL_AUTH_PIPELINE = (
 )
 
 SOCIAL_AUTH_URL_NAMESPACE = 'social'
+
+SOCIAL_AUTH_SPOTIFY_KEY = str(os.getenv('SPOTIFY_CLIENT_ID'))
+SOCIAL_AUTH_SPOTIFY_SECRET = str(os.getenv('SPOTIFY_CLIENT_SECRET'))
