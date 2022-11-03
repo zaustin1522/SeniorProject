@@ -7,7 +7,6 @@
       <div class="row d-flex justify-content-center align-items-center h-100">
         <div class="col col-lg-8 mb-4 mb-lg-0">
           {% if user.is_authenticated %}
-            <a href="{% url 'social:begin' 'spotify' %}">Link your Spotify</a>
           <div class="card mb-3" style="border-radius: .5rem;">
             <div class="row g-0">
               <div class="col-md-4 gradient-custom text-center text-white" style="border-top-left-radius: .5rem; border-bottom-left-radius: .5rem; background: linear-gradient(to right bottom, rgb(142, 155, 224), rgb(16, 13, 160));">
@@ -39,6 +38,9 @@
                   <h6>Interests</h6>
                   <hr class="mt-0 mb-4">
                   <div class="row pt-1">
+                    <div class="col-6 mb-3">
+                      <a href="{% url 'social:begin' 'spotify' %}">Link your Spotify</a>
+                    </div>
                     <div class="col-6 mb-3">
                       <h6>Favorite Artist</h6>
                       <p class="text-muted">Lorem ipsum</p>
