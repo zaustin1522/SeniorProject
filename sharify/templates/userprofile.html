@@ -8,6 +8,7 @@
         <div class="col col-lg-8 mb-4 mb-lg-0">
           {% if user.is_authenticated %}
             <a href="{% url 'social:begin' 'spotify' %}">Link your Spotify</a>
+		<h5>{{ social }}</h5>
           <div class="card mb-3" style="border-radius: .5rem;">
             <div class="row g-0">
               <div class="col-md-4 gradient-custom text-center text-white" style="border-top-left-radius: .5rem; border-bottom-left-radius: .5rem; background: linear-gradient(to right bottom, rgb(142, 155, 224), rgb(16, 13, 160));">

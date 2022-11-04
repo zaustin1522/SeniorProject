@@ -4,7 +4,7 @@
 from sharify.forms import SearchForm
 from django.shortcuts import render
 from django.http import Http404
-from .models import Musicdata
+from .models import Musicdata, User
 from .forms import *
 import random
 from dotenv import load_dotenv
@@ -14,6 +14,8 @@ from django.urls import reverse_lazy
 from django.views import generic
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import get_user_model
+from social_django.models import UserSocialAuth
+
 User = get_user_model()
 
 ###########################################################################################
@@ -156,7 +158,8 @@ def homepage(request):
 
 #-----------------------------------------------------------------------------------------#
 def show_userprofile(request):
-    return render(request, 'userprofile.html', {})
+    social = UserSocialAuth
+    return render(request, 'userprofile.html', social)
 
 #-----------------------------------------------------------------------------------------#
 class SignUpView(generic.CreateView):
