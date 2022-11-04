@@ -15,6 +15,7 @@ from django.views import generic
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import get_user_model
 from social_django.models import UserSocialAuth
+import requests
 
 User = get_user_model()
 
@@ -158,8 +159,32 @@ def homepage(request):
 
 #-----------------------------------------------------------------------------------------#
 def show_userprofile(request):
-    social = UserSocialAuth
-    return render(request, 'userprofile.html', social)
+    current_user = request.user
+    if not current_user.is_authenticated:
+        return render(request, 'userprofile.html', {})
+    query = UserSocialAuth.objects.filter(user = current_user.user_id)
+    if not query:
+        return render(request, 'userprofile.html', {'needs_linking': True})
+    social = query.first().extra_data
+    refresh_token = social['refresh_token']
+    access_token = social['access_token']
+    auth_string = 'Bearer ' + access_token
+    headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': auth_string,
+    }
+    current_track_data = requests.get('https://api.spotify.com/v1/me/player/currently-playing', headers=headers)
+    current_track_json = current_track_data.json()
+    if 'item' in current_track_json:
+        current_track_name = current_track_json['item']['name']
+        current_track_artist = current_track_json['item']['artists'][0]['name']
+        return render(request, 'userprofile.html', {
+            'listening': True,
+            'current_track_name': current_track_name,
+            'current_track_artist': current_track_artist
+        })
+    return render(request, 'userprofile.html', {'json': current_track_json})
 
 #-----------------------------------------------------------------------------------------#
 class SignUpView(generic.CreateView):

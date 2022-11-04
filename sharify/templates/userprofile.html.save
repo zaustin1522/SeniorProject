@@ -7,9 +7,10 @@
       <div class="row d-flex justify-content-center align-items-center h-100">
         <div class="col col-lg-8 mb-4 mb-lg-0">
           {% if user.is_authenticated %}
-            {% if needs_linking %}
-              <a href="{% url 'social:begin' 'spotify' %}">Link your Spotify</a>
-            {% endif %}
+            <a href="{% url 'social:begin' 'spotify' %}">Link your Spotify</a>
+		<h5>{{ access_token }}</h5>
+                <h4>{{ refresh_token }}</h5>
+		
           <div class="card mb-3" style="border-radius: .5rem;">
             <div class="row g-0">
               <div class="col-md-4 gradient-custom text-center text-white" style="border-top-left-radius: .5rem; border-bottom-left-radius: .5rem; background: linear-gradient(to right bottom, rgb(142, 155, 224), rgb(16, 13, 160));">
@@ -17,7 +18,7 @@
                 <h5>User's Name</h5>
                 <p>Small Description</p>
                 <button type="button" class="btn btn-default btn-lg text-white">
-                  <span class="glyphicon glyphicon-star"></span>Edit
+                    <span class="glyphicon glyphicon-star"></span>Edit
                 </button>              
             </div>
               <div class="col-md-8">
@@ -34,12 +35,8 @@
                       <p class="text-muted">info@example.com</p>
                     </div>
                     <div class="col-6 mb-3">
-                      <h6>Listening to</h6>
-                      {% if listening %}
-                        <p class="text-muted">"{{current_track_name}}" by {{current_track_artist}}</p>
-                      {% else %}
-                        <p class="text-muted">Nothing right now! {{json}}</p>
-                      {% endif %}
+                      <h6>Phone</h6>
+                      <p class="text-muted">123 456 789</p>
                     </div>
                     
                   <h6>Interests</h6>
