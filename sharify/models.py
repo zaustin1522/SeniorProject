@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from social_django.models import UserSocialAuth
 from django.utils import timezone
 
 class Musicdata(models.Model):
@@ -43,13 +44,6 @@ class Playlist(models.Model):
     def __str__(self):
         return self.playlist_name
 
-class UserToken(models.Model):
-    access_token = models.TextField(blank=True, null=True)
-    token_type = models.TextField(default="Bearer")
-    expires_in = models.IntegerField(default=0)
-    state = models.TextField(blank=True, null=True)
-    expires_at = models.DateTimeField(blank=True, null=True)
-
 class User(AbstractUser):
     pass
     def __str__(self):
@@ -59,8 +53,9 @@ class User(AbstractUser):
     user_avatar = models.ImageField(blank=True, default="")
     user_id = models.AutoField(primary_key=True)
     user_is_paired = models.BooleanField(default=False)
-    user_token = models.OneToOneField(UserToken, on_delete=models.CASCADE, blank=True, null=True)
+    user_social_auth = models.OneToOneField(UserSocialAuth, on_delete=models.CASCADE, blank=True, null=True, related_name="custom_user_token")
     user_spotify_id = models.CharField(max_length=50, blank=True, null=True)
     user_spotify_fav_artist = models.CharField(max_length=50, blank=True, null=True)
     user_spotify_friends = models.TextField(blank=True, null=True)
+
 
