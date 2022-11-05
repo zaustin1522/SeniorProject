@@ -195,7 +195,7 @@ def show_myprofile(request):
                 'current_track_name': current_track_name,
                 'current_track_artist': current_track_artist
             })
-    return render(request, 'userprofile.html', {})
+    return render(request, 'userprofile.html', {'needs_linking': True})
 
 #-----------------------------------------------------------------------------------------#
 class SignUpView(generic.CreateView):
