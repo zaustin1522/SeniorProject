@@ -156,7 +156,7 @@ def homepage(request):
 
 #-----------------------------------------------------------------------------------------#
 def show_userprofile(request):
-    return render(request, 'userprofile.html', {})
+    return render(request, 'userprofile.html', context={"user":request.user})
 
 #-----------------------------------------------------------------------------------------#
 class SignUpView(generic.CreateView):
