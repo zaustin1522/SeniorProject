@@ -161,20 +161,19 @@ def homepage(request):
 def show_userprofile(request):
     username = request.GET.get('user')
     if username is None:
-        return show_myprofile(request)
+        return show_profile_for(request, request.user)
     findUser = User.objects.filter(username = username).first()
     if findUser is None:
-        return show_myprofile(request)
-    return render(request, 'userprofile.html', context={'user':findUser})
+        return show_profile_for(request, request.user)
+    return show_profile_for(request, findUser)
 
 #-----------------------------------------------------------------------------------------#
-def show_myprofile(request):
-    current_user = request.user
-    if not current_user.is_authenticated:
+def show_profile_for(request, current_user):
+    if current_user == request.user and not current_user.is_authenticated:
         return render(request, 'userprofile.html', {})
     query = UserSocialAuth.objects.filter(user = current_user.user_id)
     if not query:
-        return render(request, 'userprofile.html', {'needs_linking': True})
+        return render(request, 'userprofile.html', {'needs_linking': True, 'message': current_user.username + " hasn't linked Spotify!"})
     social = query.first().extra_data
     refresh_token = social['refresh_token']
     access_token = social['access_token']
@@ -198,7 +197,7 @@ def show_myprofile(request):
     elif current_track_data.status_code == 401:
         return render(request, 'userprofile.html', {
             'listening': False,
-            'message': request.user.username + "needs to re-authorize!"
+            'message': request.user.username + " needs to re-authorize!"
         })
     else:
         current_track_json = current_track_data.json()
