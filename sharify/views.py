@@ -185,7 +185,11 @@ def show_myprofile(request):
         'Authorization': auth_string,
     }
     current_track_data = requests.get('https://api.spotify.com/v1/me/player/currently-playing', headers=headers)
-    if 'application/json' in current_track_data.headers.get('Content-Type', ''):
+    if current_track_data.status_code == 204:
+        return render(request, 'userprofile.html', {
+            'listening': False
+        })
+    else:
         current_track_json = current_track_data.json()
         if 'item' in current_track_json:
             current_track_name = current_track_json['item']['name']
