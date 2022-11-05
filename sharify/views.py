@@ -173,7 +173,11 @@ def show_profile_for(request, current_user):
         return render(request, 'userprofile.html', {})
     query = UserSocialAuth.objects.filter(user = current_user.user_id)
     if not query:
-        return render(request, 'userprofile.html', {'user': current_user, 'needs_linking': True, 'message': current_user.username + " hasn't linked Spotify!"})
+        return render(request, 'userprofile.html', {
+            'user': current_user, 
+            'needs_linking': True, 
+            'message': current_user.username + " hasn't linked Spotify!"
+        })
     social = query.first().extra_data
     refresh_token = social['refresh_token']
     access_token = social['access_token']
@@ -213,7 +217,7 @@ def show_profile_for(request, current_user):
                 'current_track_name': current_track_name,
                 'current_track_artist': current_track_artist
             })
-    return render(request, 'userprofile.html', {'user': current_user, 'needs_linking': True, 'debug': current_track_data})
+    return render(request, 'userprofile.html', {'user': current_user, 'debug': current_track_data})
 
 #-----------------------------------------------------------------------------------------#
 class SignUpView(generic.CreateView):
