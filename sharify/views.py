@@ -173,9 +173,14 @@ def show_profile_for(request, current_user):
         return render(request, 'userprofile.html', {})
     query = UserSocialAuth.objects.filter(user = current_user.user_id)
     if not query:
+        if current_user == request.user:
+            return render(request, 'userprofile.html', {
+                'user': current_user, 
+                'needs_linking': True, 
+                'message': current_user.username + " hasn't linked Spotify!"
+            })
         return render(request, 'userprofile.html', {
             'user': current_user, 
-            'needs_linking': True, 
             'message': current_user.username + " hasn't linked Spotify!"
         })
     social = query.first().extra_data
