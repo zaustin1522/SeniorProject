@@ -9,6 +9,7 @@
           {% if user.is_authenticated %}
             {% if needs_linking %}
               <a href="{% url 'social:begin' 'spotify' %}">Link your Spotify</a>
+              <p> {{debug}} </p>
             {% endif %}
           <div class="card mb-3" style="border-radius: .5rem;">
             <div class="row g-0">
