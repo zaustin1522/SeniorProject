@@ -9,7 +9,7 @@
           <div class="card mb-3" style="border-radius: .5rem;">
             <div class="row g-0">
               <div class="col-md-4 gradient-custom text-center text-white" style="border-top-left-radius: .5rem; border-bottom-left-radius: .5rem; background: linear-gradient(to right bottom, rgb(142, 155, 224), rgb(16, 13, 160));">
-                <img src= {{ user.avatar.url }} alt="Avatar" class="img-fluid my-5 rounded mx-auto d-block" style="width: 80px;" />
+                <img src="{% static user.user_avatar %}" alt="Avatar" class="img-fluid my-5 rounded mx-auto d-block" style="width: 80px;" />
                 <h5>{{ user.username }}</h5>
                 <p>{{ user.first_name }} {{ user.last_name }}</p>
                 <button type="button" class="btn btn-default btn-lg text-white">
