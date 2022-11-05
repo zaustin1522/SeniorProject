@@ -53,7 +53,7 @@ class User(AbstractUser):
     avatar = models.ImageField(blank=True, default="", upload_to="images/avatars/")
     user_id = models.AutoField(primary_key=True)
     is_paired = models.BooleanField(default=False)
-    social_auth = models.OneToOneField(UserSocialAuth, on_delete=models.CASCADE, blank=True, null=True, related_name="custom_user_token")
+    spotify_auth = models.OneToOneField(UserSocialAuth, on_delete=models.CASCADE, blank=True, null=True, related_name="custom_user_token")
     fav_artist = models.CharField(max_length=50, blank=True, null=True)
     friends = models.TextField(blank=True, null=True)
     token_expires = models.DateTimeField(default=timezone.now)
