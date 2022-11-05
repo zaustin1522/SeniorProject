@@ -173,7 +173,7 @@ def show_profile_for(request, current_user):
         return render(request, 'userprofile.html', {})
     query = UserSocialAuth.objects.filter(user = current_user.user_id)
     if not query:
-        return render(request, 'userprofile.html', {'needs_linking': True, 'message': current_user.username + " hasn't linked Spotify!"})
+        return render(request, 'userprofile.html', {'user': current_user, 'needs_linking': True, 'message': current_user.username + " hasn't linked Spotify!"})
     social = query.first().extra_data
     refresh_token = social['refresh_token']
     access_token = social['access_token']
@@ -186,16 +186,19 @@ def show_profile_for(request, current_user):
     current_track_data = requests.get('https://api.spotify.com/v1/me/player/currently-playing', headers=headers)
     if current_track_data.status_code == 204:
         return render(request, 'userprofile.html', {
+            'user': current_user,
             'listening': False,
             'message': "Nothing right now!"
         })
     elif current_track_data.status_code == 503:
         return render(request, 'userprofile.html', {
+            'user': current_user,
             'listening': False,
             'message': "Huh, not sure!"
         })
     elif current_track_data.status_code == 401:
         return render(request, 'userprofile.html', {
+            'user': current_user,
             'listening': False,
             'message': request.user.username + " needs to re-authorize!"
         })
@@ -205,11 +208,12 @@ def show_profile_for(request, current_user):
             current_track_name = current_track_json['item']['name']
             current_track_artist = current_track_json['item']['artists'][0]['name']
             return render(request, 'userprofile.html', {
+                'user': current_user,
                 'listening': True,
                 'current_track_name': current_track_name,
                 'current_track_artist': current_track_artist
             })
-    return render(request, 'userprofile.html', {'needs_linking': True, 'debug': current_track_data})
+    return render(request, 'userprofile.html', {'user': current_user, 'needs_linking': True, 'debug': current_track_data})
 
 #-----------------------------------------------------------------------------------------#
 class SignUpView(generic.CreateView):
