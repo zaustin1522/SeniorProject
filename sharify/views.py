@@ -159,6 +159,16 @@ def homepage(request):
 
 #-----------------------------------------------------------------------------------------#
 def show_userprofile(request):
+    username = request.GET.get('user')
+    if username is None:
+        return show_myprofile(request)
+    findUser = User.objects.filter(username = username).first()
+    if findUser is None:
+        return show_myprofile(request)
+    return render(request, 'userprofile.html', context={'user':findUser})
+
+#-----------------------------------------------------------------------------------------#
+def show_myprofile(request):
     current_user = request.user
     if not current_user.is_authenticated:
         return render(request, 'userprofile.html', {})
