@@ -185,16 +185,17 @@ def show_myprofile(request):
         'Authorization': auth_string,
     }
     current_track_data = requests.get('https://api.spotify.com/v1/me/player/currently-playing', headers=headers)
-    current_track_json = current_track_data.json()
-    if 'item' in current_track_json:
-        current_track_name = current_track_json['item']['name']
-        current_track_artist = current_track_json['item']['artists'][0]['name']
-        return render(request, 'userprofile.html', {
-            'listening': True,
-            'current_track_name': current_track_name,
-            'current_track_artist': current_track_artist
-        })
-    return render(request, 'userprofile.html', {'json': current_track_json})
+    if 'application/json' in current_track_data.headers.get('Content-Type', ''):
+        current_track_json = current_track_data.json()
+        if 'item' in current_track_json:
+            current_track_name = current_track_json['item']['name']
+            current_track_artist = current_track_json['item']['artists'][0]['name']
+            return render(request, 'userprofile.html', {
+                'listening': True,
+                'current_track_name': current_track_name,
+                'current_track_artist': current_track_artist
+            })
+    return render(request, 'userprofile.html', {})
 
 #-----------------------------------------------------------------------------------------#
 class SignUpView(generic.CreateView):
