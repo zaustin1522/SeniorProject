@@ -187,7 +187,18 @@ def show_myprofile(request):
     current_track_data = requests.get('https://api.spotify.com/v1/me/player/currently-playing', headers=headers)
     if current_track_data.status_code == 204:
         return render(request, 'userprofile.html', {
-            'listening': False
+            'listening': False,
+            'message': "Nothing right now!"
+        })
+    elif current_track_data.status_code == 503:
+        return render(request, 'userprofile.html', {
+            'listening': False,
+            'message': "Huh, not sure!"
+        })
+    elif current_track_data.status_code == 401:
+        return render(request, 'userprofile.html', {
+            'listening': False,
+            'message': request.user.username + "needs to re-authorize!"
         })
     else:
         current_track_json = current_track_data.json()
