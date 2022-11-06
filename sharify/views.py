@@ -164,15 +164,10 @@ def homepage(request):
 def show_userprofile(request: WSGIRequest):
     username = request.GET.get('user')
     if username is None:
-        user: MyUser
-        user = request.user
-        return show_profile_for(request, user)
+        return show_profile_for(request, request.user)
     findUser = User.objects.filter(username = username).first()
     if findUser is None:
-        user: MyUser
-        user = request.user
         return show_profile_for(request, request.user)
-    findUser: MyUser
     return show_profile_for(request, findUser)
 
 #-----------------------------------------------------------------------------------------#
@@ -225,7 +220,7 @@ def show_profile_for(request: WSGIRequest, current_user: MyUser):
             return render(request, 'userprofile.html', {
             'user': current_user,
             'needs_linking': True,
-            'message': ""
+            'message': type(social_entry).__name__
             })
         return render(request, 'userprofile.html', {
             'user': current_user,
