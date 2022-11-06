@@ -161,7 +161,7 @@ def homepage(request):
     return render(request, 'home.html', {})
 
 #-----------------------------------------------------------------------------------------#
-def show_userprofile(request):
+def show_userprofile(request: WSGIRequest):
     username = request.GET.get('user')
     if username is None:
         return show_profile_for(request, request.user)
@@ -172,6 +172,7 @@ def show_userprofile(request):
 
 #-----------------------------------------------------------------------------------------#
 def show_profile_for(request: WSGIRequest, current_user: MyUser):
+
     if current_user == request.user and not current_user.is_authenticated:
         return render(request, 'userprofile.html', {})
     social_entry = UserSocialAuth.objects.get(user = current_user.user_id)
