@@ -1,6 +1,7 @@
 ###########################################################################################
 #   Imports
 ###########################################################################################
+from django.core.handlers.wsgi import WSGIRequest
 from sharify.forms import SearchForm
 from django.shortcuts import render
 from django.http import Http404
@@ -18,7 +19,6 @@ from social_django.models import UserSocialAuth
 from social_django.utils import load_strategy
 import requests
 import base64
-import django.http.response
 
 User = get_user_model()
 
@@ -172,6 +172,8 @@ def show_userprofile(request):
 
 #-----------------------------------------------------------------------------------------#
 def show_profile_for(request, current_user):
+
+    request = WSGIRequest(request)
     if current_user == request.user and not current_user.is_authenticated:
         return render(request, 'userprofile.html', {})
     social_entry = UserSocialAuth.objects.get(user = current_user.user_id)
@@ -219,7 +221,7 @@ def show_profile_for(request, current_user):
             return render(request, 'userprofile.html', {
             'user': current_user,
             'needs_linking': True,
-            'message': type(request).__name__
+            'message': type(current_user).__name__
             })
         return render(request, 'userprofile.html', {
             'user': current_user,
