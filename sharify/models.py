@@ -48,7 +48,7 @@ class User(AbstractUser):
     pass
     def __str__(self):
         return self.username
-    dob = models.DateTimeField(blank=True, default=timezone.now)
+    dob = models.DateTimeField(blank=True, null=True, default=timezone.now)
     bio = models.TextField(blank=True, default="")
     avatar = models.ImageField(blank=True, default="", upload_to="images/avatars/")
     user_id = models.AutoField(primary_key=True)
