@@ -172,10 +172,10 @@ def show_userprofile(request: WSGIRequest):
 
 #-----------------------------------------------------------------------------------------#
 def show_profile_for(request: WSGIRequest, current_user: MyUser):
-
     if current_user == request.user and not current_user.is_authenticated:
         return render(request, 'userprofile.html', {})
     social_entry = UserSocialAuth.objects.get(user = current_user.user_id)
+    social_entry: UserSocialAuth
     if not social_entry:
         if current_user == request.user:
             return render(request, 'userprofile.html', {
@@ -210,7 +210,7 @@ def show_profile_for(request: WSGIRequest, current_user: MyUser):
         })
     elif current_track_data.status_code == 401:
         #return refresh_for(request, current_user, social_entry)
-        refresh_token = str(social_entry.extra_data['refresh_token'])
+        refresh_token = str(social['refresh_token'])
         refresh_bytes = refresh_token.encode('ascii')
         refresh_base_bytes = base64.b64encode(refresh_bytes)
         refresh_base = refresh_base_bytes.decode('ascii')
@@ -220,7 +220,7 @@ def show_profile_for(request: WSGIRequest, current_user: MyUser):
             return render(request, 'userprofile.html', {
             'user': current_user,
             'needs_linking': True,
-            'message': type(social_entry).__name__
+            'message': response.json
             })
         return render(request, 'userprofile.html', {
             'user': current_user,
