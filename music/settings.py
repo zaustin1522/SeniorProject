@@ -134,6 +134,8 @@ LOGIN_REDIRECT_URL = "/userprofile/"
 LOGOUT_REDIRECT_URL = "/"
 
 AUTH_USER_MODEL = 'sharify.User'
+SOCIAL_AUTH_USER_MODEL = 'sharify.User'
+
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
