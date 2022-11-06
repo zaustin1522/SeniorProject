@@ -213,7 +213,7 @@ def show_profile_for(request, current_user):
         refresh_base_bytes = base64.b64encode(refresh_bytes)
         refresh_base = refresh_base_bytes.decode('ascii')
         response=requests.post("https://accounts.spotify.com/api/token", data={"grant_type": "refresh_token", "refresh_token": refresh_token}, headers={"Authorization": "Basic " + refresh_base})
-        new_access_token = response['access_token']
+        #new_access_token = response['access_token']
         if current_user == request.user:
             return render(request, 'userprofile.html', {
             'user': current_user,
