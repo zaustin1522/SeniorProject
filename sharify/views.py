@@ -206,9 +206,14 @@ def show_profile_for(request, current_user):
             'message': "Huh, not sure!"
         })
     elif current_track_data.status_code == 401:
+        if current_user == request.user:
+            return render(request, 'userprofile.html', {
+            'user': current_user,
+            'needs_linking': True,
+            'message': request.user.username + " needs to re-authorize!"
+            })
         return render(request, 'userprofile.html', {
             'user': current_user,
-            'listening': False,
             'message': request.user.username + " needs to re-authorize!"
         })
     else:
