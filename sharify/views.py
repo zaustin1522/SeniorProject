@@ -17,10 +17,10 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth import get_user_model
 from social_django.models import UserSocialAuth
 from social_django.utils import load_strategy
+from django.contrib.auth.base_user import AbstractBaseUser
 import requests
 import base64
 
-User = get_user_model()
 
 ###########################################################################################
 #   Loading Environment and Setting Spotify Controller
@@ -172,6 +172,7 @@ def show_userprofile(request):
 
 #-----------------------------------------------------------------------------------------#
 def show_profile_for(request: WSGIRequest, current_user):
+    current_user = User(current_user)
     if current_user == request.user and not current_user.is_authenticated:
         return render(request, 'userprofile.html', {})
     social_entry = UserSocialAuth.objects.get(user = current_user.user_id)
@@ -180,11 +181,11 @@ def show_profile_for(request: WSGIRequest, current_user):
             return render(request, 'userprofile.html', {
                 'user': current_user, 
                 'needs_linking': True, 
-                'message': current_user.username + " hasn't linked Spotify!"
+                'message': current_user.get_username + " hasn't linked Spotify!"
             })
         return render(request, 'userprofile.html', {
             'user': current_user, 
-            'message': current_user.username + " hasn't linked Spotify!"
+            'message': current_user.get_username + " hasn't linked Spotify!"
         })
     social = social_entry.extra_data
     access_token = social['access_token']
@@ -219,7 +220,7 @@ def show_profile_for(request: WSGIRequest, current_user):
             return render(request, 'userprofile.html', {
             'user': current_user,
             'needs_linking': True,
-            'message': type(request.user).__qualname__
+            'message': type(UserSocialAuth.objects.get(user = current_user.user_id))
             })
         return render(request, 'userprofile.html', {
             'user': current_user,
