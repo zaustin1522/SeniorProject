@@ -5,7 +5,7 @@ from django.core.handlers.wsgi import WSGIRequest
 from sharify.forms import SearchForm
 from django.shortcuts import render
 from django.http import Http404
-from .models import Musicdata, User
+from .models import Musicdata, User as MyUser
 from .forms import *
 import random
 from dotenv import load_dotenv
@@ -171,11 +171,10 @@ def show_userprofile(request):
     return show_profile_for(request, findUser)
 
 #-----------------------------------------------------------------------------------------#
-def show_profile_for(request: WSGIRequest, current_user):
-    current_user = User(current_user)
+def show_profile_for(request: WSGIRequest, current_user: MyUser):
     if current_user == request.user and not current_user.is_authenticated:
         return render(request, 'userprofile.html', {})
-    social_entry = UserSocialAuth.objects.get(user = current_user.username)
+    social_entry = UserSocialAuth.objects.get(user = current_user.user_id)
     if not social_entry:
         if current_user == request.user:
             return render(request, 'userprofile.html', {
@@ -220,7 +219,7 @@ def show_profile_for(request: WSGIRequest, current_user):
             return render(request, 'userprofile.html', {
             'user': current_user,
             'needs_linking': True,
-            'message': type(UserSocialAuth.objects.get(user = current_user.username))
+            'message': type(UserSocialAuth.objects.get(user = current_user.user_id))
             })
         return render(request, 'userprofile.html', {
             'user': current_user,
