@@ -181,11 +181,11 @@ def show_profile_for(request: WSGIRequest, current_user):
             return render(request, 'userprofile.html', {
                 'user': current_user, 
                 'needs_linking': True, 
-                'message': current_user.get_username + " hasn't linked Spotify!"
+                'message': current_user.username + " hasn't linked Spotify!"
             })
         return render(request, 'userprofile.html', {
             'user': current_user, 
-            'message': current_user.get_username + " hasn't linked Spotify!"
+            'message': current_user.username + " hasn't linked Spotify!"
         })
     social = social_entry.extra_data
     access_token = social['access_token']
@@ -220,7 +220,7 @@ def show_profile_for(request: WSGIRequest, current_user):
             return render(request, 'userprofile.html', {
             'user': current_user,
             'needs_linking': True,
-            'message': type(UserSocialAuth.objects.get(user = current_user.user_id))
+            'message': type(UserSocialAuth.objects.get(user = current_user.username))
             })
         return render(request, 'userprofile.html', {
             'user': current_user,
