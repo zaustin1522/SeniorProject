@@ -16,6 +16,7 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth import get_user_model
 from social_django.models import UserSocialAuth
 import requests
+import base64
 
 User = get_user_model()
 
@@ -171,8 +172,8 @@ def show_userprofile(request):
 def show_profile_for(request, current_user):
     if current_user == request.user and not current_user.is_authenticated:
         return render(request, 'userprofile.html', {})
-    query = UserSocialAuth.objects.filter(user = current_user.user_id)
-    if not query:
+    social_entry = UserSocialAuth.objects.get(user = current_user.user_id)
+    if not social_entry:
         if current_user == request.user:
             return render(request, 'userprofile.html', {
                 'user': current_user, 
@@ -183,8 +184,7 @@ def show_profile_for(request, current_user):
             'user': current_user, 
             'message': current_user.username + " hasn't linked Spotify!"
         })
-    social = query.first().extra_data
-    refresh_token = social['refresh_token']
+    social = social_entry.extra_data
     access_token = social['access_token']
     auth_string = 'Bearer ' + access_token
     headers = {
@@ -206,11 +206,19 @@ def show_profile_for(request, current_user):
             'message': "Huh, not sure!"
         })
     elif current_track_data.status_code == 401:
+        #return refresh_for(request, current_user, social_entry)
+
+        refresh_token = str(social_entry.extra_data['refresh_token'])
+        refresh_bytes = refresh_token.encode('ascii')
+        refresh_base_bytes = base64.b64encode(refresh_bytes)
+        refresh_base = refresh_base_bytes.decode('ascii')
+        response=requests.post("https://accounts.spotify.com/api/token", data={"grant_type": "refresh_token", "refresh_token": refresh_token}, headers={"Authorization": "Basic " + refresh_base})
+        new_access_token = response['access_token']
         if current_user == request.user:
             return render(request, 'userprofile.html', {
             'user': current_user,
             'needs_linking': True,
-            'message': request.user.username + " needs to re-authorize!"
+            'message': response
             })
         return render(request, 'userprofile.html', {
             'user': current_user,
@@ -228,6 +236,16 @@ def show_profile_for(request, current_user):
                 'current_track_artist': current_track_artist
             })
     return render(request, 'userprofile.html', {'user': current_user, 'debug': current_track_data})
+
+#-----------------------------------------------------------------------------------------#
+def refresh_for(request, current_user, social_entry):
+    refresh_token = str(social_entry.extra_data['refresh_token'])
+    refresh_bytes = refresh_token.encode('ascii')
+    refresh_base_bytes = base64.b64encode(refresh_bytes)
+    refresh_base = refresh_base_bytes.decode('ascii')
+    response=requests.post("https://accounts.spotify.com/api/token", data={"grant_type": "refresh_token", "refresh_token": refresh_token}, headers={"Authorization": "Basic " + refresh_base})
+    new_access_token = response['access_token']
+    return show_profile_for(request, current_user)
 
 #-----------------------------------------------------------------------------------------#
 class SignUpView(generic.CreateView):
