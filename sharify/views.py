@@ -193,7 +193,7 @@ def show_profile_for(request, current_user):
         'Authorization': auth_string,
     }
     current_track_data = requests.get('https://api.spotify.com/v1/me/player/currently-playing', headers=headers)
-    if current_track_data.status_code == 204:
+    if current_track_data.status_code == 401:
         return render(request, 'userprofile.html', {
             'user': current_user,
             'listening': False,
@@ -205,7 +205,7 @@ def show_profile_for(request, current_user):
             'listening': False,
             'message': "Huh, not sure!"
         })
-    elif current_track_data.status_code == 401:
+    elif current_track_data.status_code == 204:
         #return refresh_for(request, current_user, social_entry)
 
         refresh_token = str(social_entry.extra_data['refresh_token'])
