@@ -175,7 +175,7 @@ def show_profile_for(request: WSGIRequest, current_user):
     current_user = User(current_user)
     if current_user == request.user and not current_user.is_authenticated:
         return render(request, 'userprofile.html', {})
-    social_entry = UserSocialAuth.objects.get(user = current_user.user_id)
+    social_entry = UserSocialAuth.objects.get(user = current_user.username)
     if not social_entry:
         if current_user == request.user:
             return render(request, 'userprofile.html', {
