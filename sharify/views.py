@@ -15,8 +15,10 @@ from django.views import generic
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import get_user_model
 from social_django.models import UserSocialAuth
+from social_django.utils import load_strategy
 import requests
 import base64
+import django.http.response
 
 User = get_user_model()
 
@@ -169,10 +171,11 @@ def show_userprofile(request):
     return show_profile_for(request, findUser)
 
 #-----------------------------------------------------------------------------------------#
-def show_profile_for(request, current_user):
+def show_profile_for(request: django.http.response.HttpResponse, current_user):
+    current_user = User(current_user)
     if current_user == request.user and not current_user.is_authenticated:
         return render(request, 'userprofile.html', {})
-    social_entry = UserSocialAuth.objects.get(user = current_user.user_id)
+    social_entry = UserSocialAuth(UserSocialAuth.objects.get(user = current_user.user_id))
     if not social_entry:
         if current_user == request.user:
             return render(request, 'userprofile.html', {
@@ -217,7 +220,7 @@ def show_profile_for(request, current_user):
             return render(request, 'userprofile.html', {
             'user': current_user,
             'needs_linking': True,
-            'message': response.content
+            'message': response.content + " " + type(request)
             })
         return render(request, 'userprofile.html', {
             'user': current_user,
