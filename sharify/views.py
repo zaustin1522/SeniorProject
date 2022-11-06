@@ -218,7 +218,7 @@ def show_profile_for(request, current_user):
             return render(request, 'userprofile.html', {
             'user': current_user,
             'needs_linking': True,
-            'message': response
+            'message': response.content
             })
         return render(request, 'userprofile.html', {
             'user': current_user,
