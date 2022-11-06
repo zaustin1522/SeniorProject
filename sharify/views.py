@@ -225,7 +225,7 @@ def show_profile_for(request: WSGIRequest, current_user: MyUser):
             return render(request, 'userprofile.html', {
             'user': current_user,
             'needs_linking': True,
-            'message': type(UserSocialAuth.objects.get(user = current_user.user_id))
+            'message': ""
             })
         return render(request, 'userprofile.html', {
             'user': current_user,
