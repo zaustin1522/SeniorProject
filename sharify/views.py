@@ -188,7 +188,7 @@ def show_profile_for(request: WSGIRequest, current_user: MyUser):
             'message': current_user.username + " hasn't linked Spotify!"
         })
     social = social_entry.extra_data
-    access_token = social['access_token']
+    access_token = social_entry.get_access_token(load_strategy())
     auth_string = 'Bearer ' + access_token
     headers = {
         'Accept': 'application/json',
