@@ -219,7 +219,7 @@ def show_profile_for(request: WSGIRequest, current_user):
             return render(request, 'userprofile.html', {
             'user': current_user,
             'needs_linking': True,
-            'message': type(request.user).__name__
+            'message': type(request.user).__qualname__
             })
         return render(request, 'userprofile.html', {
             'user': current_user,
