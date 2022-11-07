@@ -21,4 +21,5 @@ urlpatterns = [
     path('', include('sharify.urls')),
     path('accounts/', include('django.contrib.auth.urls')),
     path('accounts/signup/', SignUpView.as_view(), name='signup'),
+    path('social/', include('social_django.urls')),
 ]

@@ -156,7 +156,13 @@ def homepage(request):
 
 #-----------------------------------------------------------------------------------------#
 def show_userprofile(request):
-    return render(request, 'userprofile.html', {})
+    username = request.GET.get('user')
+    if username is None:
+        return render(request, 'userprofile.html', context={"user":request.user})
+    findUser = User.objects.filter(username = username).first()
+    if findUser is None:
+        return render(request, 'userprofile.html', context={"user":request.user})
+    return render(request, 'userprofile.html', context={'user':findUser})
 
 #-----------------------------------------------------------------------------------------#
 class SignUpView(generic.CreateView):
