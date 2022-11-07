@@ -3,12 +3,12 @@
 ###########################################################################################
 from sharify.forms import SearchForm
 from django.shortcuts import render
-from django.http import Http404
+from django.http import Http404, HttpResponseRedirect
 from .models import Musicdata
 from .forms import *
 import random
 from dotenv import load_dotenv
-from spotipy.oauth2 import SpotifyClientCredentials
+from spotipy.oauth2 import SpotifyClientCredentials, SpotifyOAuth
 import spotipy
 from django.urls import reverse_lazy
 from django.views import generic
@@ -36,6 +36,30 @@ def todays_top_hits(request):
     }
     return render(request, 'todays_top_hits.html', context)
 
+#-----------------------------------------------------------------------------------------#
+def link_spotify(request):
+    scope = "user-library-read"                             # Scope for Token (Privileges)
+    auth_manager = SpotifyOAuth(scope=scope)                # Sets scope for SpotifyOAuth oject so it knows what privileges we're requesting for login.
+
+    if request.GET.get('code'):
+        if request.user.is_authenticated:                                   # Checks if logged in (Will probably never call this view without being logged in first, but additional guarding statement)
+            if request.user.user_spotify_refresh_token is None:             # Checks if refresh token has been accessed, if not continue
+                request.user.user_spotify_refresh_token = auth_manager.get_access_token(request.GET.get('code'))['refresh_token']
+                request.user.save()
+        return HttpResponseRedirect('http://localhost:8000/userprofile')        # Redirect to User Profile.
+
+    if not False: return HttpResponseRedirect(auth_manager.get_authorize_url()) # If not authorized: Redirect to Spotify Login.
+
+#-----------------------------------------------------------------------------------------#
+def oauth_use_template(request):
+    if request.user.is_authenticated:
+        if not request.user.user_spotify_refresh_token is None:
+            spotify_oauth = SpotifyOAuth()
+            token_info = spotify_oauth.get_access_token(request.user.user_spotify_refresh_token)  # Attempts to pul access token.
+            if token_info:  # If successful
+                spotify_auth_controller = spotipy.Spotify(auth=token_info['access_token'])              # Instantiate Spotify Controller for API calls
+                print(spotify_auth_controller.current_user())           # Print Current User
+    return render(request, 'home.html')
 #-----------------------------------------------------------------------------------------#
 def find_albums(artist, from_year = None, to_year = None):
     query = Musicdata.objects.filter(track_artist__contains = artist)
