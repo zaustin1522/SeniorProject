@@ -313,16 +313,26 @@ def show_profile_for(request: WSGIRequest, current_user: MyUser):
     if current_track_data is not None:
         # this might fail if the User is experiencing a Spotify ad.
         if 'item' in current_track_data:
-            current_track_name = current_track_data['item']['name']
-            current_track_artist = current_track_data['item']['artists'][0]['name']
-            return render(request, 'userprofile.html', {
-                'current_user': current_user,
-                'listening': True,
-                'current_track_name': current_track_name,
-                'current_track_artist': current_track_artist,
-                'fav_artist': fav_artist,
-                'fav_track': fav_track
-            })
+            if 'currently_playing_type' in current_track_data:
+                if not current_track_data['currently_playing_type'] == 'ad':
+                    current_track_name = current_track_data['item']['name']
+                    current_track_artist = current_track_data['item']['artists'][0]['name']
+                    return render(request, 'userprofile.html', {
+                        'current_user': current_user,
+                        'listening': True,
+                        'current_track_name': current_track_name,
+                        'current_track_artist': current_track_artist,
+                        'fav_artist': fav_artist,
+                        'fav_track': fav_track
+                    })
+                else:
+                    return render(request, 'userprofile.html', {
+                        'current_user': current_user,
+                        'listening': False,
+                        'message': "An ad!",
+                        'fav_artist': fav_artist,
+                        'fav_track': fav_track
+                    })
     # User is linked to Spotify, but isn't listening to anything.
     return render(request, 'userprofile.html', {
         'current_user': current_user,
