@@ -279,9 +279,10 @@ def show_profile_for(request: WSGIRequest, current_user: MyUser):
 
     # User does not have a linked Spotify Profile
     if profile is None:
+        needs_linking = current_user != request.user
         return render(request, 'userprofile.html', {
             'current_user': current_user,
-            'needs_linking': current_user == request.user,
+            'needs_linking': needs_linking,
             'message': current_user.username + " hasn't linked Spotify!",
             'fav_artist': "What IS art, really?"
         }) 
