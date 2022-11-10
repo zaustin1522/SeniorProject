@@ -40,7 +40,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'social_django',
 ]
 
 MIDDLEWARE = [
@@ -52,10 +51,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
-MIDDLEWARE_CLASSES = [
-    'social_django.middleware.SocialAuthExceptionMiddleware',
-    ]
 
 ROOT_URLCONF = 'music.urls'
 
@@ -70,8 +65,6 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'social_django.context_processors.backends',
-                'social_django.context_processors.login_redirect',
             ],
         },
     },
@@ -134,34 +127,12 @@ LOGIN_REDIRECT_URL = "/userprofile/"
 LOGOUT_REDIRECT_URL = "/"
 
 AUTH_USER_MODEL = 'sharify.User'
-SOCIAL_AUTH_USER_MODEL = 'sharify.User'
 
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
     'social_core.backends.spotify.SpotifyOAuth2',
 )
-
-SOCIAL_AUTH_SPOTIFY_SCOPE = [
-    'ugc-image-upload',
-    'user-read-playback-state',
-    'user-modify-playback-state',
-    'user-read-currently-playing',
-    'streaming',
-    'playlist-read-private',
-    'playlist-read-collaborative',
-    'playlist-modify-private',
-    'playlist-modify-public',
-    'user-follow-modify',
-    'user-follow-read',
-    'user-read-playback-position',
-    'user-top-read',
-    'user-read-recently-played',
-    'user-library-modify',
-    'user-library-read',
-    'user-read-email',
-    'user-read-private',
-]
 
 SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.social_auth.social_details',
@@ -179,3 +150,4 @@ SOCIAL_AUTH_URL_NAMESPACE = 'social'
 
 SOCIAL_AUTH_SPOTIFY_KEY = str(os.getenv('SPOTIFY_CLIENT_ID'))
 SOCIAL_AUTH_SPOTIFY_SECRET = str(os.getenv('SPOTIFY_CLIENT_SECRET'))
+SPOTIPY_REDIRECT_URI = str(os.getenv('SPOTIPY_REDIRECT_URI'))

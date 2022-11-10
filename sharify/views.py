@@ -1,26 +1,20 @@
 ###########################################################################################
 #   Imports
 ###########################################################################################
-from django.core.handlers.wsgi import WSGIRequest
-from sharify.forms import SearchForm
-from django.shortcuts import render
-from django.http import Http404
-from .models import Musicdata, User as MyUser
 from .forms import *
-import random
-from dotenv import load_dotenv
-from spotipy.oauth2 import SpotifyClientCredentials
-import spotipy
+from .models import Musicdata, User as MyUser, SpotifyProfile
+from django.core.handlers.wsgi import WSGIRequest
+from django.http import Http404, HttpResponseRedirect
+from django.shortcuts import redirect
+from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views import generic
-from django.contrib.auth import authenticate, login
-from django.contrib.auth import get_user_model
-from social_django.models import UserSocialAuth
-from social_django.utils import load_strategy
-from django.contrib.auth.base_user import AbstractBaseUser
-import requests
-import base64
-
+from dotenv import load_dotenv
+from sharify.forms import SearchForm
+from spotipy.oauth2 import SpotifyClientCredentials, SpotifyOAuth
+import json
+import random
+import spotipy
 
 ###########################################################################################
 #   Loading Environment and Setting Spotify Controller
@@ -29,18 +23,100 @@ load_dotenv()
 
 # Instantiating the Spotipy unauthenticated controller
 spotipy_controller = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
+# Scope for Token (Privileges)
+scope = [
+    'ugc-image-upload',
+    'user-read-playback-state',
+    'user-modify-playback-state',
+    'user-read-currently-playing',
+    'streaming',
+    'playlist-read-private',
+    'playlist-read-collaborative',
+    'playlist-modify-private',
+    'playlist-modify-public',
+    'user-follow-modify',
+    'user-follow-read',
+    'user-read-playback-position',
+    'user-top-read',
+    'user-read-recently-played',
+    'user-library-modify',
+    'user-library-read',
+    'user-read-email',
+    'user-read-private']
+# Sets scope for SpotifyOAuth oject so it knows what privileges we're requesting for login.
+auth_manager = SpotifyOAuth(scope=scope)
+
+
 
 #-----------------------------------------------------------------------------------------#
-def todays_top_hits(request):
-    tracks = []
-    # Grabs the playlist items object and grabs dict key 'items' to get an array of tracks
-    for item in spotipy_controller.playlist_items(playlist_id='37i9dQZF1DXcBWIGoYBM5M')['items']:
-        tracks.append(item['track']['id'])
-    context = {
-        # Splits first 10 tracks
-        'tracks': tracks[:10]
-    }
-    return render(request, 'todays_top_hits.html', context)
+
+###########################################################################################
+#   Defining Basic Views
+###########################################################################################
+
+#-----------------------------------------------------------------------------------------#
+def homepage(request):
+    return render(request, 'home.html', {})
+
+#-----------------------------------------------------------------------------------------#
+class SignUpView(generic.CreateView):
+    form_class = SignupForm
+    success_url = reverse_lazy("login")
+    template_name = "registration/signup.html"
+
+#-----------------------------------------------------------------------------------------#
+
+###########################################################################################
+#   Defining Views for Authorization
+###########################################################################################
+
+#-----------------------------------------------------------------------------------------#
+def link_spotify(request: WSGIRequest):
+    if request.GET.get('code'):
+        user: MyUser = request.user
+        profile: SpotifyProfile = user.profile
+        token_info: json = auth_manager.get_access_token(request.GET.get('code'))
+        # if user hasn't linked before
+        if profile is None:
+            spotify_auth_controller = spotipy.Spotify(auth=token_info['access_token'])
+            user_profile: json = spotify_auth_controller.current_user()
+            display_name = user_profile['display_name']
+            spotify_id = user_profile['id']
+            follower_total = user_profile['followers']['total']
+            api_access = user_profile['href']
+            avatar_url = user_profile['images'][0]['url']
+            user.profile = SpotifyProfile.objects.create(
+                display_name = display_name, 
+                spotify_id = spotify_id, 
+                follower_total = follower_total, 
+                api_access = api_access, 
+                avatar_url = avatar_url, 
+                token_info = token_info
+            )
+            user.save()
+        return redirect('/userprofile/')        # Redirect to User Profile.
+    # If that all failed, get authorization from Spotify
+    return HttpResponseRedirect(auth_manager.get_authorize_url())
+
+#-----------------------------------------------------------------------------------------#
+# We can probably get rid of this.
+def oauth_use_template(request: WSGIRequest):
+    if request.user.is_authenticated:
+        user: MyUser = request.user
+        profile: SpotifyProfile = user.profile
+        if not profile.token_info is None:
+            spotify_oauth = SpotifyOAuth()
+            token_info = spotify_oauth.get_access_token(profile.token_info['refresh_token'])  # Attempts to pull access token.
+            if token_info:
+                spotify_auth_controller = spotipy.Spotify(auth=token_info['access_token'])        # Instantiate Spotify Controller for API calls
+                print(spotify_auth_controller.current_user())           # Print Current User
+    return render(request, 'home.html')
+
+#-----------------------------------------------------------------------------------------#
+
+###########################################################################################
+#   Defining Utility Methods for Music Search
+###########################################################################################
 
 #-----------------------------------------------------------------------------------------#
 def find_albums(artist, from_year = None, to_year = None):
@@ -104,7 +180,25 @@ def find_album_by_name(album):
     }
 
 #-----------------------------------------------------------------------------------------#
-def get_artist(request):
+
+###########################################################################################
+#   Defining Views for Music Search and Browse
+###########################################################################################
+
+#-----------------------------------------------------------------------------------------#
+def todays_top_hits(request: WSGIRequest):
+    tracks = []
+    # Grabs the playlist items object and grabs dict key 'items' to get an array of tracks
+    for item in spotipy_controller.playlist_items(playlist_id='37i9dQZF1DXcBWIGoYBM5M')['items']:
+        tracks.append(item['track']['id'])
+    context = {
+        # Splits first 10 tracks
+        'tracks': tracks[:10]
+    }
+    return render(request, 'todays_top_hits.html', context)
+
+#-----------------------------------------------------------------------------------------#
+def get_artist(request: WSGIRequest):
     if request.method == 'POST':
         # create a form instance and populate it with data from the request:
         form = SearchForm(request.POST)
@@ -133,7 +227,7 @@ def get_artist(request):
         return render(request, 'artist.html', {'form': form})
 
 #-----------------------------------------------------------------------------------------#
-def get_album(request):
+def get_album(request: WSGIRequest):
     if request.method == 'GET':
         album = request.GET.get('album', None)
         if album is None:
@@ -145,7 +239,7 @@ def get_album(request):
             return render(request, "results.html", albums)
 
 #-----------------------------------------------------------------------------------------#
-def get_track(request):
+def get_track(request: WSGIRequest):
     if request.method == 'GET':
         track = request.GET.get('track', None)
         if track is None:
@@ -157,89 +251,85 @@ def get_track(request):
             return render(request, "results.html", tracks)
 
 #-----------------------------------------------------------------------------------------#
-def homepage(request):
-    return render(request, 'home.html', {})
+
+###########################################################################################
+#   Defining Views and Methods for Users and Profile Browsing
+###########################################################################################
 
 #-----------------------------------------------------------------------------------------#
 def show_userprofile(request: WSGIRequest):
-    username = request.GET.get('user')
+    username = request.GET.get('username')
+    print(username)
     if username is None:
         return show_profile_for(request, request.user)
-    findUser = User.objects.filter(username = username).first()
+    findUser: MyUser = User.objects.filter(username = username).first()
     if findUser is None:
+        print("fuck")
         return show_profile_for(request, request.user)
     return show_profile_for(request, findUser)
 
 #-----------------------------------------------------------------------------------------#
-def show_profile_for(request: WSGIRequest, current_user: MyUser, tried = 0):
-    if current_user == request.user and not current_user.is_authenticated:
-        return render(request, 'userprofile.html', {})
-    social_entry = current_user.social_auth.get(provider='spotify')
-    social_entry: UserSocialAuth
-    if not social_entry:
-        if current_user == request.user:
-            return render(request, 'userprofile.html', {
-                'user': current_user,
-                'needs_linking': True,
-                'message': current_user.username + " hasn't linked Spotify!"
-            })
+def show_profile_for(request: WSGIRequest, current_user: MyUser):
+
+    # No user is logged in, no user was requested; go to homepage
+    if current_user.username == '':
+        return redirect('/')
+
+    profile: SpotifyProfile = current_user.profile
+
+    # User does not have a linked Spotify Profile
+    if profile is None:
         return render(request, 'userprofile.html', {
-            'user': current_user,
-            'message': current_user.username + " hasn't linked Spotify!"
-        })
-    social = social_entry.extra_data
-    access_token = social_entry.get_access_token(load_strategy())
-    headers = {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + access_token,
-    }
-    current_track_data = requests.get('https://api.spotify.com/v1/me/player/currently-playing', headers=headers)
-    if current_track_data.status_code == 204:
-        return render(request, 'userprofile.html', {
-            'user': current_user,
-            'listening': False,
-            'message': "Nothing right now!"
-        })
-    elif current_track_data.status_code == 503:
-        return render(request, 'userprofile.html', {
-            'user': current_user,
-            'listening': False,
-            'message': "Huh, not sure!"
-        })
-    elif current_track_data.status_code == 401:
-        if tried == 0:
-            social_entry.extra_data['auth_time'] = 0
-            social_entry.save()
-            return show_profile_for(request, current_user, 1)
-        else:
-            if current_user == request.user:
-                return render(request, 'userprofile.html', {
-                    'user': current_user,
-                    'needs_linking': True,
-                    'message': "Yikes."
-                })
-            return render(request, 'userprofile.html', {
-                'user': current_user,
-                'message': "Yikes."
-            })
+            'current_user': current_user,
+            'needs_linking': current_user == request.user,
+            'message': current_user.username + " hasn't linked Spotify!",
+            'fav_artist': "What IS art, really?"
+        }) 
+
+    # Check if User's access token is expired, and refresh it if needed.
+    if auth_manager.is_token_expired(profile.token_info):
+        auth_manager.refresh_access_token(refresh_token = profile.token_info['refresh_token'])
+        profile.token_info['access_token'] = auth_manager.get_access_token() 
+        profile.save()
+    
+    # Get the User's most-played artist from Spotify.
+    fav_artist_data: json = spotipy_controller.current_user_top_artists()
+    if fav_artist_data is not None and 'items' in fav_artist_data:
+        fav_artist: str = fav_artist_data['items'][0]['name']
     else:
-        current_track_json = current_track_data.json()
-        if 'item' in current_track_json:
-            current_track_name = current_track_json['item']['name']
-            current_track_artist = current_track_json['item']['artists'][0]['name']
+        fav_artist: str = current_user.username + " doesn't play favorites."
+
+    # Get the User's most-played song from Spotify.
+    fav_track_data: json = spotipy_controller.current_user_top_tracks()
+    if fav_track_data is not None and 'items' in fav_track_data:
+        fav_track: str = "\"" + fav_track_data['items'][0]['name'] + "\" by " + fav_track_data['items'][0]['artists'][0]['name']
+    else:
+        # haha, high level humor
+        fav_track: str = "4'33\" by John Cage"
+
+    current_track_data: json = spotipy_controller.currently_playing()
+
+    # User is linked to Spotify AND is currently listening to something.
+    if current_track_data is not None:
+        # this might fail if the User is experiencing a Spotify ad.
+        if 'item' in current_track_data:
+            current_track_name = current_track_data['item']['name']
+            current_track_artist = current_track_data['item']['artists'][0]['name']
             return render(request, 'userprofile.html', {
-                'user': current_user,
+                'current_user': current_user,
                 'listening': True,
                 'current_track_name': current_track_name,
-                'current_track_artist': current_track_artist
+                'current_track_artist': current_track_artist,
+                'fav_artist': fav_artist,
+                'fav_track': fav_track
             })
-    return render(request, 'userprofile.html', {'user': current_user, 'debug': current_track_data})
-
-#-----------------------------------------------------------------------------------------#
-class SignUpView(generic.CreateView):
-    form_class = SignupForm
-    success_url = reverse_lazy("login")
-    template_name = "registration/signup.html"
+    # User is linked to Spotify, but isn't listening to anything.
+    return render(request, 'userprofile.html', {
+        'current_user': current_user,
+        'listening': False,
+        'message': "Nothing right now!",
+        'fav_artist': fav_artist,
+        'fav_track': fav_track
+    })
 
 #-----------------------------------------------------------------------------------------#

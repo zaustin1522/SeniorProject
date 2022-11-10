@@ -1,7 +1,5 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from social_django.models import UserSocialAuth
-from django.utils import timezone
 
 class Musicdata(models.Model):
     track_id = models.TextField()
@@ -44,17 +42,21 @@ class Playlist(models.Model):
     def __str__(self):
         return self.playlist_name
 
+class SpotifyProfile(models.Model):
+    display_name = models.TextField(default = "")       # ['display_name']
+    spotify_id = models.TextField(default = "")         # ['id']
+    follower_total = models.IntegerField(default = 0)   # ['followers']['total']
+    api_access = models.TextField(default = "")         # ['href']
+    avatar_url = models.TextField(default = "")         # ['images'][0]['url']
+    token_info = models.JSONField(default = "")         # Full token object, get_access_token
+
 class User(AbstractUser):
     pass
     def __str__(self):
         return self.username
-    dob = models.DateTimeField(blank=True, null=True, default=timezone.now)
-    bio = models.TextField(blank=True, default="")
-    avatar = models.ImageField(blank=True, default="", upload_to="images/avatars/")
-    user_id = models.AutoField(primary_key=True)
-    is_paired = models.BooleanField(default=False)
+    dob = models.DateTimeField(blank=True, null=True)
+    bio = models.TextField(default="")
+    id = models.AutoField(primary_key=True)
     fav_artist = models.CharField(max_length=50, blank=True, null=True)
-    friends = models.TextField(blank=True, null=True)
-    token_expires = models.DateTimeField(default=timezone.now)
-
-
+    friends = models.TextField(default = "")
+    profile = models.OneToOneField(SpotifyProfile, on_delete=models.CASCADE, null=True, blank=True)

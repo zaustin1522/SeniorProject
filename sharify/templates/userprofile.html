@@ -6,20 +6,25 @@
     <div class="container py-5 h-100">
       <div class="row d-flex justify-content-center align-items-center h-100">
         <div class="col col-lg-8 mb-4 mb-lg-0">
-          {% if user.is_authenticated %}
-            {% if needs_linking %}
-              <a href="{% url 'social:begin' 'spotify' %}">Link your Spotify</a>
-              <p> {{debug}} </p>
-            {% endif %}
           <div class="card mb-3" style="border-radius: .5rem;">
             <div class="row g-0">
               <div class="col-md-4 gradient-custom text-center text-white" style="border-top-left-radius: .5rem; border-bottom-left-radius: .5rem; background: linear-gradient(to right bottom, rgb(142, 155, 224), rgb(16, 13, 160));">
-                <img src="{% static user.avatar %}" alt="Avatar" class="img-fluid my-5 rounded mx-auto d-block" style="width: 80px;" />
-                <h5>{{ user.username }}</h5>
-                <p>{{ user.first_name }} {{ user.last_name }}</p>
+                {% if needs_linking %}
+                  <img src="{% static 'images/anonymous_profile.png' %}" alt="Anonymous Avatar" class="img-fluid my-5 rounded mx-auto d-block" style="width: 100px;" />
+                {% else %}
+                  <img src="{{ current_user.profile.avatar_url }}" alt="Avatar" class="img-fluid my-5 rounded mx-auto d-block" style="width: 100px;" />
+                {% endif %}
+                <h5>{{ current_user.username }}</h5>
+                <p>{{ current_user.first_name }} {{ current_user.last_name }}</p>
                 <button type="button" class="btn btn-default btn-lg text-white">
                   <span class="glyphicon glyphicon-star"></span>Edit
-                </button>              
+                </button>
+                {% if needs_linking and current_user.username == user.username %}
+                  <br/>
+                  <a href="/link_spotify/" class="btn btn-default btn-lg text-white">
+                    <span class="glyphicon glyphicon-star"></span>Link Spotify
+                  </a>
+                {% endif %}
             </div>
               <div class="col-md-8">
                 <div class="card-body p-4">
@@ -28,11 +33,11 @@
                   <div class="row pt-1">
                     <div class="col-6 mb-3">
                         <h6>Bio</h6>
-                        <p class="text-muted">{{ user.bio }}</p>
+                        <p class="text-muted">{{ current_user.bio }}</p>
                       </div>
                     <div class="col-6 mb-3">
                       <h6>Email</h6>
-                      <p class="text-muted">{{ user.email }}</p>
+                      <p class="text-muted">{{ current_user.email }}</p>
                     </div>
                     <div class="col-6 mb-3">
                       <h6>Listening to</h6>
@@ -48,11 +53,11 @@
                   <div class="row pt-1">
                     <div class="col-6 mb-3">
                       <h6>Favorite Artist</h6>
-                      <p class="text-muted">Lorem ipsum</p>
+                      <p class="text-muted">{{ fav_artist }}</p>
                     </div>
                     <div class="col-6 mb-3">
-                      <h6>Favorite Playlist</h6>
-                      <p class="text-muted">Dolor sit amet</p>
+                      <h6>Favorite Song</h6>
+                      <p class="text-muted">{{ fav_track }}</p>
                     </div>
                   </div>
                   <div class="d-flex justify-content-start">
@@ -64,10 +69,6 @@
               </div>
             </div>
           </div>
-          {% else %}
-          <meta http-equiv="refresh" content="3; url='/login/'" />
-          <h1>Please log in!</h1>
-          {% endif %}
         </div>
       </div>
     </div>
