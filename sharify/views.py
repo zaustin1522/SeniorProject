@@ -333,3 +333,6 @@ def show_profile_for(request: WSGIRequest, current_user: MyUser):
     })
 
 #-----------------------------------------------------------------------------------------#
+
+def comment(request):
+    return render(request, 'comment.html', {})

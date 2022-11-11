@@ -1,7 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.utils import timezone
 
 class Musicdata(models.Model):
+    id = models.AutoField(primary_key = True)
     track_id = models.TextField()
     track_name = models.TextField()
     track_artist = models.TextField()
@@ -60,3 +62,11 @@ class User(AbstractUser):
     fav_artist = models.CharField(max_length=50, blank=True, null=True)
     friends = models.TextField(default = "")
     profile = models.OneToOneField(SpotifyProfile, on_delete=models.CASCADE, null=True, blank=True)
+
+class Comment(models.Model):
+    id = models.AutoField(primary_key=True)
+    content_type = models.TextField(default="track")
+    content_id = models.ForeignKey(Musicdata, on_delete = models.DO_NOTHING)
+    user_id = models.ForeignKey(User, on_delete = models.DO_NOTHING)
+    comment = models.TextField(default = "")
+    posted_at = models.DateTimeField(default = timezone.now)
