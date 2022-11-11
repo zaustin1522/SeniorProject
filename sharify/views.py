@@ -2,7 +2,7 @@
 #   Imports
 ###########################################################################################
 from .forms import *
-from .models import Musicdata, User as MyUser, SpotifyProfile
+from .models import Musicdata, User as MyUser, SpotifyProfile, Comment
 from django.core.handlers.wsgi import WSGIRequest
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import redirect
@@ -120,12 +120,12 @@ def oauth_use_template(request: WSGIRequest):
 
 #-----------------------------------------------------------------------------------------#
 def find_albums(artist, from_year = None, to_year = None):
-    query = Musicdata.objects.filter(track_artist__contains = artist)
+    query = Musicdata.objects.filter(artist__contains = artist)
     if from_year is not None:
-        query = query.filter(track_album_release_date__gte = from_year)
+        query = query.filter(album_release_date__gte = from_year)
     if to_year is not None:
-        query = query.filter(track_album_release_date__lte = to_year)
-    query = query.all().order_by('track_album_id')
+        query = query.filter(album_release_date__lte = to_year)
+    query = query.all().order_by('album_id')
     track: Musicdata
     averagePopularity = dict()
     track = query.first()
@@ -133,15 +133,15 @@ def find_albums(artist, from_year = None, to_year = None):
     numTracks = 0
     albumPopularity = 0.0
     for track in query:
-        if track.track_album_id == albumTracker:
+        if track.album_id == albumTracker:
             numTracks = numTracks + 1.0
-            albumPopularity += track.track_popularity
+            albumPopularity += track.popularity
         else:
             if numTracks != 0:
                 averagePopularity[albumTracker] = albumPopularity / float(numTracks)
-            albumTracker = track.track_album_id
+            albumTracker = track.album_id
             numTracks = 1
-            albumPopularity = float(track.track_popularity)
+            albumPopularity = float(track.popularity)
     if numTracks != 0:
         averagePopularity[albumTracker] = albumPopularity / numTracks
 
@@ -165,19 +165,51 @@ def find_track_by_name(track):
 
 #-----------------------------------------------------------------------------------------#
 def find_album_by_name(album):
-    query = Musicdata.objects.filter(track_album_name__contains = album).values('track_album_id')
+    query = Musicdata.objects.filter(album_name__contains = album).values('album_id')
     temp = list(query)
     resp = []
     [resp.append(album) for album in temp if album not in resp]
     # Randomize to get different results each time
     random.shuffle(resp)
     # Return the id of up to 9 albums
-    albums = [item['track_album_id'] for item in resp[:9]]
+    albums = [item['album_id'] for item in resp[:9]]
     albumGrid = [albums[i:i+3] for i in range(0, len(albums), 3)]
     return {
         'results': albumGrid,
 	'type': "album"
     }
+
+#-----------------------------------------------------------------------------------------#
+
+###########################################################################################
+#   Defining Method for Playlist Scraping
+###########################################################################################
+
+#-----------------------------------------------------------------------------------------#
+def scrape_playlist(items):
+    for item in items:
+        if Musicdata.objects.filter(track_id = item['track']['id']).__len__ == 0:
+            num_artists: int = item['track']['album']['artists'].__len__
+            artist_string: str = ""
+            if num_artists == 1:
+                artist_string = item['track']['album']['artists'][0]['name']
+            elif num_artists == 2:
+                artist_string = item['track']['album']['artists'][0]['name'] + " & " + item['track']['album']['artists'][1]['name']
+            else:
+                for artist_number in range (num_artists - 2):
+                    artist_string = artist_string + item['track']['album']['artists'][artist_number]['name'] + ", "
+                artist_string = artist_string + "& " + item['track']['album']['artists'][num_artists - 1]['name']
+                
+            Musicdata.objects.create(
+                track_id = item['track']['id'],
+                track_name = item['track']['name'],
+                artist = artist_string,
+                popularity  = item['track']['popularity'],
+                album_id  = item['track']['album']['id'],
+                album_name = item['track']['album']['name'],
+                album_release_date = item['track']['album']['release_date'],
+                duration_ms  = item['track']['duration_ms']
+            )
 
 #-----------------------------------------------------------------------------------------#
 
@@ -189,13 +221,23 @@ def find_album_by_name(album):
 def todays_top_hits(request: WSGIRequest):
     tracks = []
     # Grabs the playlist items object and grabs dict key 'items' to get an array of tracks
-    for item in spotipy_controller.playlist_items(playlist_id='37i9dQZF1DXcBWIGoYBM5M')['items']:
+    items: json = spotipy_controller.playlist_items(playlist_id='37i9dQZF1DXcBWIGoYBM5M')['items']
+    for item in items:
+        item: json
         tracks.append(item['track']['id'])
+    
+    scrape_playlist(items)
+
     context = {
         # Splits first 10 tracks
         'tracks': tracks[:10]
     }
     return render(request, 'todays_top_hits.html', context)
+
+#-----------------------------------------------------------------------------------------#
+def get_playlist(request: WSGIRequest):
+    playlists = spotipy_controller.user_playlists('spotify')
+    print(playlists)
 
 #-----------------------------------------------------------------------------------------#
 def get_artist(request: WSGIRequest):
@@ -333,6 +375,16 @@ def show_profile_for(request: WSGIRequest, current_user: MyUser):
     })
 
 #-----------------------------------------------------------------------------------------#
-
-def comment(request):
+def comment(request: WSGIRequest):
+    if request.method == 'POST':
+        # create a form instance and populate it with data from the request:
+        form = CommentForm(request.POST)
+        # check whether it's valid:
+        if form.is_valid():
+             comment_on: Musicdata = Musicdata.objects.filter(track_id = form.cleaned_data['content_id']).first()
+             user: MyUser = request.user
+             comment: str = str(form.cleaned_data['comment'])
+             Comment.objects.create(comment_on=comment_on, user=user, comment=comment)
     return render(request, 'comment.html', {})
+
+#-----------------------------------------------------------------------------------------#
