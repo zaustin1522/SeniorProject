@@ -54,7 +54,7 @@ class Playlist(models.Model):
     genre = models.CharField(max_length=100)
     date_created = models.CharField(max_length=500, default="No date")
     image = models.ImageField(blank=True, default="")
-    songs = models.ManyToManyField(Musicdata, on_delete=models.DO_NOTHING)
+    songs = models.ManyToManyField(Musicdata)
 
     def __str__(self):
         return self.name
