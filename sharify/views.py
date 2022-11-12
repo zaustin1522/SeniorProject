@@ -20,6 +20,7 @@ import spotipy
 #   Loading Environment and Setting Spotify Controller
 ###########################################################################################
 load_dotenv()
+global_current_user: MyUser = MyUser.objects.get(id=7)
 
 # Instantiating the Spotipy unauthenticated controller
 spotipy_controller = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
@@ -182,34 +183,54 @@ def find_album_by_name(album):
 #-----------------------------------------------------------------------------------------#
 
 ###########################################################################################
-#   Defining Method for Playlist Scraping
+#   Defining Method for Playlist and Song Scraping
 ###########################################################################################
 
 #-----------------------------------------------------------------------------------------#
-def scrape_playlist(items):
+def scrape_playlist(items: json):
     for item in items:
-        if Musicdata.objects.filter(track_id = item['track']['id']).__len__ == 0:
-            num_artists: int = item['track']['album']['artists'].__len__
-            artist_string: str = ""
-            if num_artists == 1:
-                artist_string = item['track']['album']['artists'][0]['name']
-            elif num_artists == 2:
-                artist_string = item['track']['album']['artists'][0]['name'] + " & " + item['track']['album']['artists'][1]['name']
-            else:
-                for artist_number in range (num_artists - 2):
-                    artist_string = artist_string + item['track']['album']['artists'][artist_number]['name'] + ", "
-                artist_string = artist_string + "& " + item['track']['album']['artists'][num_artists - 1]['name']
-                
-            Musicdata.objects.create(
-                track_id = item['track']['id'],
-                track_name = item['track']['name'],
-                artist = artist_string,
-                popularity  = item['track']['popularity'],
-                album_id  = item['track']['album']['id'],
-                album_name = item['track']['album']['name'],
-                album_release_date = item['track']['album']['release_date'],
-                duration_ms  = item['track']['duration_ms']
-            )
+        if item['track'] is not None and Musicdata.objects.filter(track_id = item['track']['id']).count() == 0:
+            global_current_user = MyUser.objects.get(id=7)
+            scrape_track(item['track'])
+
+#-----------------------------------------------------------------------------------------#
+def scrape_track(track: json):
+    num_artists: int = len(track['artists'])
+    track['available_markets'] = ""
+    artist_string: str = ""
+    if num_artists == 1:
+        artist_string = track['artists'][0]['name']
+    elif num_artists == 2:
+        artist_string = track['artists'][0]['name'] + " & " + track['artists'][1]['name']
+    else:
+        for artist_number in range (num_artists - 1):
+            artist_string = artist_string + track['artists'][artist_number]['name'] + ", "
+        artist_string = artist_string + "& " + track['artists'][num_artists - 1]['name']
+        
+    object = Musicdata.objects.create(
+        track_id = track['id'],
+        track_name = track['name'],
+        artist = artist_string,
+        popularity  = track['popularity'],
+        album_id  = track['album']['id'],
+        album_name = track['album']['name'],
+        album_release_date = int(str(track['album']['release_date'])[:4]),
+        duration_ms  = track['duration_ms']
+    )
+    object.save()
+    print("[SYSTEM] :: Added " + str(object) + ".\t\tThanks, " + str(global_current_user) + "!")
+
+#-----------------------------------------------------------------------------------------#
+def scrape_album(album_id: str):
+    album: json = spotipy_controller.album_tracks(album_id = album_id)
+    track_ids: list = []
+    track: json
+    for track in album['items']:
+        if Musicdata.objects.filter(track_id=track['id']).count() == 0:
+            track_ids.append(track['id'])
+    tracks: json = spotipy_controller.tracks(tracks=track_ids)
+    for track in tracks['tracks']:
+        scrape_track(track)
 
 #-----------------------------------------------------------------------------------------#
 
@@ -226,6 +247,7 @@ def todays_top_hits(request: WSGIRequest):
         item: json
         tracks.append(item['track']['id'])
     
+    global_current_user = MyUser.objects.get(id=7)
     scrape_playlist(items)
 
     context = {
@@ -233,11 +255,6 @@ def todays_top_hits(request: WSGIRequest):
         'tracks': tracks[:10]
     }
     return render(request, 'todays_top_hits.html', context)
-
-#-----------------------------------------------------------------------------------------#
-def get_playlist(request: WSGIRequest):
-    playlists = spotipy_controller.user_playlists('spotify')
-    print(playlists)
 
 #-----------------------------------------------------------------------------------------#
 def get_artist(request: WSGIRequest):
@@ -301,12 +318,10 @@ def get_track(request: WSGIRequest):
 #-----------------------------------------------------------------------------------------#
 def show_userprofile(request: WSGIRequest):
     username = request.GET.get('username')
-    print(username)
     if username is None:
         return show_profile_for(request, request.user)
     findUser: MyUser = User.objects.filter(username = username).first()
     if findUser is None:
-        print("fuck")
         return show_profile_for(request, request.user)
     return show_profile_for(request, findUser)
 
@@ -344,7 +359,11 @@ def show_profile_for(request: WSGIRequest, current_user: MyUser):
     # Get the User's most-played song from Spotify.
     fav_track_data: json = spotipy_controller.current_user_top_tracks()
     if fav_track_data is not None and 'items' in fav_track_data:
-        fav_track: str = "\"" + fav_track_data['items'][0]['name'] + "\" by " + fav_track_data['items'][0]['artists'][0]['name']
+        #their favorite track wasn't in the DB: check whole album, add if necessary (2 API calls inside)
+        if Musicdata.objects.filter(track_id=fav_track_data['items'][0]['id']).count == 0:
+            global_current_user = current_user
+            scrape_album(fav_track_data['items'][0]['album']['id'])
+        fav_track = Musicdata.objects.get(track_id = fav_track_data['items'][0]['id'])
     else:
         # haha, high level humor
         fav_track: str = "4'33\" by John Cage"
@@ -353,18 +372,32 @@ def show_profile_for(request: WSGIRequest, current_user: MyUser):
 
     # User is linked to Spotify AND is currently listening to something.
     if current_track_data is not None:
-        # this might fail if the User is experiencing a Spotify ad.
         if 'item' in current_track_data:
-            current_track_name = current_track_data['item']['name']
-            current_track_artist = current_track_data['item']['artists'][0]['name']
-            return render(request, 'userprofile.html', {
-                'current_user': current_user,
-                'listening': True,
-                'current_track_name': current_track_name,
-                'current_track_artist': current_track_artist,
-                'fav_artist': fav_artist,
-                'fav_track': fav_track
-            })
+            if 'currently_playing_type' in current_track_data:
+                if not current_track_data['currently_playing_type'] == 'ad':
+                    track = current_track_data['item']
+
+                    # Track isn't in DB: check whole album, add if necessary (2 API calls inside)
+                    if Musicdata.objects.filter(track_id=track['id']).count() == 0:
+                        global_current_user = current_user
+                        scrape_album(track['album']['id'])
+
+                    current_track: Musicdata = Musicdata.objects.get(track_id=track['id'])
+                    return render(request, 'userprofile.html', {
+                        'current_user': current_user,
+                        'listening': True,
+                        'current_track': str(current_track),
+                        'fav_artist': fav_artist,
+                        'fav_track': fav_track
+                    })
+                else:
+                    return render(request, 'userprofile.html', {
+                        'current_user': current_user,
+                        'listening': False,
+                        'message': "An ad!",
+                        'fav_artist': fav_artist,
+                        'fav_track': fav_track
+                    })
     # User is linked to Spotify, but isn't listening to anything.
     return render(request, 'userprofile.html', {
         'current_user': current_user,

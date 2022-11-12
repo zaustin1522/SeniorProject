@@ -3,8 +3,7 @@ from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
 
 class Musicdata(models.Model):
-    id = models.AutoField(primary_key = True)
-    track_id = models.TextField()
+    track_id = models.TextField(primary_key=True)
     track_name = models.TextField()
     artist = models.TextField()
     popularity  = models.FloatField()
@@ -14,7 +13,7 @@ class Musicdata(models.Model):
     duration_ms  = models.IntegerField()
 
     def __str__(self):
-        return "\"" + self.track_name + "\" by " + self.track_artist
+        return "\"" + self.track_name + "\" by " + self.artist
 
     class Meta: 
         ordering = ('artist', 'album_name', 'track_name',) 
@@ -36,8 +35,6 @@ class User(AbstractUser):
     id = models.AutoField(primary_key=True)
     fav_artist = models.CharField(max_length=50, blank=True, null=True)
     friends = models.ManyToManyField("self")
-    pending_requests_out = models.ManyToManyField("self", symmetrical=False)
-    pending_requests_in = models.ManyToManyField("self", symmetrical=False)
     profile = models.OneToOneField(SpotifyProfile, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
@@ -63,7 +60,7 @@ class Comment(models.Model):
     id = models.AutoField(primary_key=True)
     posted_at = models.DateTimeField(default = timezone.now)
     comment_on = models.ForeignKey(Musicdata, on_delete = models.DO_NOTHING)
-    user = models.ForeignKey(User, on_delete = models.DO_NOTHING)
+    user = models.ForeignKey(User, on_delete = models.DO_NOTHING, default=7)
     comment = models.TextField(default = "")
 
     class Meta: 
