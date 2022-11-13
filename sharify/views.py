@@ -91,7 +91,10 @@ def link_spotify(request: WSGIRequest):
             spotify_id = user_profile['id']
             follower_total = user_profile['followers']['total']
             api_access = user_profile['href']
-            avatar_url = user_profile['images'][0]['url']
+            if len(user_profile['images']) != 0:
+                avatar_url = user_profile['images'][0]['url']
+            else:
+                avatar_url = "https://i.scdn.co/image/ab6775700000ee8555c25988a6ac314394d3fbf5"
             user.profile = SpotifyProfile.objects.create(
                 display_name = display_name, 
                 spotify_id = spotify_id, 
