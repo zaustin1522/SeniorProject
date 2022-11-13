@@ -1,8 +1,10 @@
 ###########################################################################################
 #   Imports
 ###########################################################################################
-from django.urls import path, include
+from django.urls import include, path
+
 from . import views
+from .views import UpdateUserView
 
 #-----------------------------------------------------------------------------------------#
 app_name = 'sharify'
@@ -15,6 +17,8 @@ urlpatterns = [
     path('userprofile/', views.show_userprofile, name="userprofile"),
     path('todays_top_hits/', views.todays_top_hits, name='todays_top_hits'),
     path('link_spotify/', views.link_spotify, name='link_spotify'),
-    path('test_oauth_endpoint/', views.oauth_use_template, name='oauth_use_template')]
+    path('test_oauth_endpoint/', views.oauth_use_template, name='oauth_use_template'),
+    path('edit_profile/', views.UpdateUserView.as_view(), name='edit_profile'),
+    ]
 
 #-----------------------------------------------------------------------------------------#

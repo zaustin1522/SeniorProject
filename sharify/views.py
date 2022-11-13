@@ -1,20 +1,23 @@
 ###########################################################################################
 #   Imports
 ###########################################################################################
-from .forms import *
-from .models import Musicdata, User as MyUser, SpotifyProfile
+import json
+import random
+
+import spotipy
 from django.core.handlers.wsgi import WSGIRequest
 from django.http import Http404, HttpResponseRedirect
-from django.shortcuts import redirect
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.views import generic
 from dotenv import load_dotenv
-from sharify.forms import SearchForm
 from spotipy.oauth2 import SpotifyClientCredentials, SpotifyOAuth
-import json
-import random
-import spotipy
+
+from sharify.forms import SearchForm
+
+from .forms import *
+from .models import Musicdata, SpotifyProfile
+from .models import User as MyUser
 
 ###########################################################################################
 #   Loading Environment and Setting Spotify Controller
@@ -344,3 +347,11 @@ def show_profile_for(request: WSGIRequest, current_user: MyUser):
     })
 
 #-----------------------------------------------------------------------------------------#
+
+class UpdateUserView(generic.UpdateView):
+    form_class = EditUserProfileForm
+    template_name = 'edit_profile.html'
+    success_url: reverse_lazy('home')
+
+    def get_object(self):
+        return self.request.user
