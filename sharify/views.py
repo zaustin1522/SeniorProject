@@ -77,7 +77,7 @@ def link_spotify(request: WSGIRequest):
     if request.GET.get('code'):
         user: MyUser = request.user
         profile: SpotifyProfile = user.profile
-        token_info: json = auth_manager.get_access_token(request.GET.get('code'))
+        token_info: json = auth_manager.get_access_token(request.GET.get('code'), check_cache=False)
         # if user hasn't linked before
         if profile is None:
             headers = {
@@ -102,6 +102,7 @@ def link_spotify(request: WSGIRequest):
             )
             user.save()
         return redirect('/userprofile/')        # Redirect to User Profile.
+
     # If that all failed, get authorization from Spotify
     return HttpResponseRedirect(auth_manager.get_authorize_url())
 
