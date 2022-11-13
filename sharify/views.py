@@ -348,7 +348,7 @@ def show_profile_for(request: WSGIRequest, current_user: MyUser):
         return render(request, 'userprofile.html', {
             'current_user': current_user,
             'can_link': current_user == request.user,
-            'needs_linking': current_user == request.user,
+            'needs_linking': True,
             'message': current_user.username + " hasn't linked Spotify!",
             'fav_artist': "What IS art, really?"
         }) 
