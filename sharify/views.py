@@ -406,7 +406,11 @@ def show_profile_for(request: WSGIRequest, current_user: MyUser):
 
 
     response = requests.get('https://api.spotify.com/v1/me/player/currently-playing', headers=headers)
-    if response.status_code == 403:
+    if response.status_code == 200:
+        current_track_data: json = json.loads(response.content)
+    elif response.status_code == 204:
+        current_track_data = None
+    elif response.status_code == 403:
         return render(request, 'userprofile.html', {
             'current_user': current_user,
             'needs_linking': current_user == request.user,
@@ -415,7 +419,6 @@ def show_profile_for(request: WSGIRequest, current_user: MyUser):
             'fav_track': fav_track
         }) 
 
-    current_track_data: json = json.loads(response.content)
 
     # User is linked to Spotify AND is currently listening to something.
     if current_track_data is not None:
