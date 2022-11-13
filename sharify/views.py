@@ -347,6 +347,7 @@ def show_profile_for(request: WSGIRequest, current_user: MyUser):
     if profile is None:
         return render(request, 'userprofile.html', {
             'current_user': current_user,
+            'can_link': current_user == request.user,
             'needs_linking': current_user == request.user,
             'message': current_user.username + " hasn't linked Spotify!",
             'fav_artist': "What IS art, really?"
