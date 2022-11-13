@@ -19,7 +19,7 @@
                 <button type="button" class="btn btn-default btn-lg text-white">
                   <span class="glyphicon glyphicon-star"></span>Edit
                 </button>
-                {% if needs_linking and current_user.username == user.username %}
+                {% if can_link %}
                   <br/>
                   <a href="/link_spotify/" class="btn btn-default btn-lg text-white">
                     <span class="glyphicon glyphicon-star"></span>Link Spotify
@@ -42,7 +42,7 @@
                     <div class="col-6 mb-3">
                       <h6>Listening to</h6>
                       {% if listening %}
-                        <p class="text-muted">"{{current_track_name}}" by {{current_track_artist}}</p>
+                        <p class="text-muted">{{ current_track }}</p>
                       {% else %}
                         <p class="text-muted">{{ message }}</p>
                       {% endif %}

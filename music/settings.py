@@ -57,7 +57,6 @@ MIDDLEWARE_CLASSES = [
     'social_django.middleware.SocialAuthExceptionMiddleware',
     ]
 
-
 ROOT_URLCONF = 'music.urls'
 
 TEMPLATES = [
@@ -124,7 +123,6 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
@@ -136,7 +134,6 @@ LOGOUT_REDIRECT_URL = "/"
 
 AUTH_USER_MODEL = 'sharify.User'
 SOCIAL_AUTH_USER_MODEL = 'sharify.User'
-
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
