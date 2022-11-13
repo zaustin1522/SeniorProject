@@ -14,6 +14,7 @@ from sharify.forms import SearchForm
 from spotipy.oauth2 import SpotifyClientCredentials, SpotifyOAuth
 import json
 import random
+import requests
 import spotipy
 
 ###########################################################################################
@@ -79,8 +80,13 @@ def link_spotify(request: WSGIRequest):
         token_info: json = auth_manager.get_access_token(request.GET.get('code'))
         # if user hasn't linked before
         if profile is None:
-            spotify_auth_controller = spotipy.Spotify(auth=token_info['access_token'])
-            user_profile: json = spotify_auth_controller.current_user()
+            headers = {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + str(token_info['access_token'])
+            }
+            response = requests.get('https://api.spotify.com/v1/me', headers=headers)
+            user_profile: json = json.loads(response.content)
             display_name = user_profile['display_name']
             spotify_id = user_profile['id']
             follower_total = user_profile['followers']['total']
@@ -317,12 +323,15 @@ def get_track(request: WSGIRequest):
 
 #-----------------------------------------------------------------------------------------#
 def show_userprofile(request: WSGIRequest):
-    username = request.GET.get('username')
+    username = request.GET.get('username', None)
     if username is None:
+        print("failed 1")
         return show_profile_for(request, request.user)
-    findUser: MyUser = User.objects.filter(username = username).first()
+    findUser: MyUser = MyUser.objects.filter(username__iexact = username).first()
     if findUser is None:
+        print("failed 2: " + username)
         return show_profile_for(request, request.user)
+    print("Showing profile for: " + str(findUser))
     return show_profile_for(request, findUser)
 
 #-----------------------------------------------------------------------------------------#
@@ -346,31 +355,67 @@ def show_profile_for(request: WSGIRequest, current_user: MyUser):
     # Check if User's access token is expired, and refresh it if needed.
     if auth_manager.is_token_expired(profile.token_info):
         auth_manager.refresh_access_token(refresh_token = profile.token_info['refresh_token'])
-        profile.token_info['access_token'] = auth_manager.get_access_token() 
+        profile.token_info['access_token'] = auth_manager.get_access_token()['access_token']
         profile.save()
     
     # Get the User's most-played artist from Spotify.
-    fav_artist_data: json = spotipy_controller.current_user_top_artists()
+    headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + str(profile.token_info['access_token'])
+    }
+    params = {
+        'time_range': 'medium_term',
+        'limit': '1',
+        'offset': '0',
+    }
+    response = requests.get('https://api.spotify.com/v1/me/top/artists', params=params, headers=headers)
+    if response.status_code == 403:
+        return render(request, 'userprofile.html', {
+            'current_user': current_user,
+            'needs_linking': current_user == request.user,
+            'message': "Something went wrong, try again later!",
+            'fav_artist': "What IS art, really?"
+        }) 
+
+    fav_artist_data: json = json.loads(response.content)
     if fav_artist_data is not None and 'items' in fav_artist_data:
         fav_artist: str = fav_artist_data['items'][0]['name']
     else:
         fav_artist: str = current_user.username + " doesn't play favorites."
 
     # Get the User's most-played song from Spotify.
-    fav_track_data: json = spotipy_controller.current_user_top_tracks()
+    response = requests.get('https://api.spotify.com/v1/me/top/tracks', params=params, headers=headers)
+    if response.status_code == 403:
+        return render(request, 'userprofile.html', {
+            'current_user': current_user,
+            'needs_linking': current_user == request.user,
+            'message': "Something went wrong, try again later!",
+            'fav_artist': fav_artist
+        }) 
+    fav_track_data: json = json.loads(response.content)
     if fav_track_data is not None and 'items' in fav_track_data:
-        
         #their favorite track wasn't in the DB: check whole album, add if necessary (2 API calls inside)
         if Musicdata.objects.filter(track_id=fav_track_data['items'][0]['id']).count == 0:
             global_current_user = current_user
             scrape_album(fav_track_data['items'][0]['album']['id'])
-
         fav_track = Musicdata.objects.get(track_id = fav_track_data['items'][0]['id'])
     else:
         # haha, high level humor
         fav_track: str = "4'33\" by John Cage"
 
-    current_track_data: json = spotipy_controller.currently_playing()
+
+    response = requests.get('https://api.spotify.com/v1/me/player/currently-playing', headers=headers)
+    if response.status_code == 403:
+        return render(request, 'userprofile.html', {
+            'current_user': current_user,
+            'needs_linking': current_user == request.user,
+            'message': "Something went wrong, try again later!",
+            'fav_artist': fav_artist,
+            'fav_track': fav_track
+        }) 
+
+    current_track_data: json = json.loads(response.content)
 
     # User is linked to Spotify AND is currently listening to something.
     if current_track_data is not None:
