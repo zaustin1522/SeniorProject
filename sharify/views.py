@@ -107,6 +107,7 @@ def link_spotify(request: WSGIRequest):
         return redirect('/userprofile/')        # Redirect to User Profile.
 
     # If that all failed, get authorization from Spotify
+    auth_manager.show_dialog = True
     return HttpResponseRedirect(auth_manager.get_authorize_url())
 
 #-----------------------------------------------------------------------------------------#
