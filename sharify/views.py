@@ -384,7 +384,7 @@ def show_profile_for(request: WSGIRequest, current_user: MyUser):
         }) 
 
     fav_artist_data: json = json.loads(response.content)
-    if fav_artist_data is not None and 'items' in fav_artist_data:
+    if fav_artist_data is not None and 'items' in fav_artist_data and len(fav_artist_data['items']) != 0:
         fav_artist: str = fav_artist_data['items'][0]['name']
     else:
         fav_artist: str = current_user.username + " doesn't play favorites."
