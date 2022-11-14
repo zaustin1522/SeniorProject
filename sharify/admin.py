@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import Musicdata, Playlist, User
+from .models import Musicdata, Playlist, User, SpotifyProfile
 from .forms import *
 
 class Admin(UserAdmin):
@@ -13,3 +13,4 @@ class Admin(UserAdmin):
 admin.site.register(Musicdata)
 admin.site.register(User, UserAdmin)
 admin.site.register(Playlist)
+admin.site.register(SpotifyProfile)
