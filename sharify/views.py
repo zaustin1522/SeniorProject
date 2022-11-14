@@ -401,7 +401,7 @@ def show_profile_for(request: WSGIRequest, current_user: MyUser):
     fav_track_data: json = json.loads(response.content)
     if fav_track_data is not None and 'items' in fav_track_data:
         #their favorite track wasn't in the DB: check whole album, add if necessary (2 API calls inside)
-        if Musicdata.objects.filter(track_id=fav_track_data['items'][0]['id']).count == 0:
+        if Musicdata.objects.filter(track_id=fav_track_data['items'][0]['id']).count() == 0:
             global_current_user = current_user
             scrape_album(fav_track_data['items'][0]['album']['id'])
         fav_track = Musicdata.objects.get(track_id = fav_track_data['items'][0]['id'])
