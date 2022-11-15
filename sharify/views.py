@@ -108,6 +108,7 @@ def link_spotify(request: WSGIRequest):
                 token_info = token_info
             )
             user.save()
+            logmessage(type="LINKED", msg=user.username+" connected Spotify ID "+spotify_id)
         return redirect('/userprofile/')        # Redirect to User Profile.
 
     # If that all failed, get authorization from Spotify
@@ -116,12 +117,18 @@ def link_spotify(request: WSGIRequest):
 
 #-----------------------------------------------------------------------------------------#
 def unlink_spotify(request: WSGIRequest):
-    current_user: MyUser = request.user
-    profile = current_user.profile
-    current_user.profile = None
-    profile.delete()
-    current_user.save()
-    return redirect('/userprofile/')
+    if request.user.is_authenticated:
+        current_user: MyUser = request.user
+        if current_user.profile is not None:
+            current_user: MyUser = request.user
+            profile = current_user.profile
+            spotify_id = profile.spotify_id
+            current_user.profile = None
+            profile.delete()
+            current_user.save()
+            logmessage(type="UNLINKED", msg=current_user.username+" disconnected Spotify ID "+spotify_id)
+            return redirect('/userprofile/')
+    return redirect('/')
 
 #-----------------------------------------------------------------------------------------#
 # We can probably get rid of this.
