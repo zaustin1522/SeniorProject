@@ -32,7 +32,7 @@ spotipy_controller = spotipy.Spotify(client_credentials_manager=SpotifyClientCre
 # Scope for Token (Privileges)
 scope = [
     #'ugc-image-upload',
-    'user-read-playback-state',
+    #'user-read-playback-state',
     #'user-modify-playback-state',
     'user-read-currently-playing',
     #'streaming',
