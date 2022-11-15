@@ -29,26 +29,30 @@ global_current_user: MyUser
 
 # Instantiating the Spotipy unauthenticated controller
 spotipy_controller = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
-# Scope for Token (Privileges)
-scope = [
-    #'ugc-image-upload',
-    #'user-read-playback-state',
-    #'user-modify-playback-state',
-    'user-read-currently-playing',
-    #'streaming',
-    #'playlist-read-private',
-    #'playlist-read-collaborative',
-    #'playlist-modify-private',
-    #'playlist-modify-public',
-    #'user-follow-modify',
-    #'user-follow-read',
-    #'user-read-playback-position',
-    'user-top-read',
-    #'user-read-recently-played',
-    #'user-library-modify',
-    #'user-library-read',
-    'user-read-email',
-    'user-read-private'
+# Scope for Token (Privileges), listed in order of appearance
+scope = [                   # "You agree that Sharify will be able to:"
+                                # "View your Spotify account data"
+    #'user-read-email',              # "Your email"
+    #'user-read-private',            # "The type of Spotify subscription you have, your account country and your settings for explicit content filtering"
+                                    # "Your name and username, your profile picture, how many followers you have on Spotify and your public playlists"
+                                # "View your activity on Spotify"
+    #'user-read-recently-played',    # "Content you have recently played"
+    'user-read-currently-playing',  # "The content you are playing"
+    #'user-read-playback-state',     # "The content you are playing and Spotify Connect devices information"
+    #'user-library-read',            # "What you’ve saved in Your Library"
+    'user-top-read',                # "Your top artists and content"
+    #'user-follow-read',             # "Who you follow on Spotify"
+    #'playlist-read-private',        # "Playlists you’ve made and playlists you follow"
+    #'playlist-read-collaborative',  # "Your collaborative playlists"
+    #'user-read-playback-position',  # "Your position in content you have played"
+                                # "Take actions in Spotify on your behalf"
+    #'user-modify-playback-state',   # "Control Spotify on your devices"
+    #'ugc-image-upload',             # "Upload images to personalize your profile or playlist cover"
+    #'user-library-modify',          # "Add and remove items in Your Library"
+    #'playlist-modify-private',      # "Create, edit, and follow private playlists"
+    #'playlist-modify-public',       # "Create, edit, and follow playlists"
+    #'user-follow-modify',           # "Manage who you follow on Spotify"
+    #'streaming',                    # "Stream and control Spotify on your other devices"
     ]
 # Sets scope for SpotifyOAuth oject so it knows what privileges we're requesting for login.
 auth_manager = SpotifyOAuth(scope=scope)
