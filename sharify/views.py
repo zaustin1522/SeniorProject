@@ -44,7 +44,7 @@ scope = [
     #'user-follow-read',
     #'user-read-playback-position',
     'user-top-read',
-    'user-read-recently-played',
+    #'user-read-recently-played',
     #'user-library-modify',
     #'user-library-read',
     'user-read-email',
