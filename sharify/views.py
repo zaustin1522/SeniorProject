@@ -31,24 +31,25 @@ global_current_user: MyUser
 spotipy_controller = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
 # Scope for Token (Privileges)
 scope = [
-    'ugc-image-upload',
+    #'ugc-image-upload',
     'user-read-playback-state',
     'user-modify-playback-state',
     'user-read-currently-playing',
     'streaming',
-    'playlist-read-private',
-    'playlist-read-collaborative',
-    'playlist-modify-private',
-    'playlist-modify-public',
+    #'playlist-read-private',
+    #'playlist-read-collaborative',
+    #'playlist-modify-private',
+    #'playlist-modify-public',
     'user-follow-modify',
-    'user-follow-read',
+    #'user-follow-read',
     'user-read-playback-position',
     'user-top-read',
     'user-read-recently-played',
-    'user-library-modify',
-    'user-library-read',
+    #'user-library-modify',
+    #'user-library-read',
     'user-read-email',
-    'user-read-private']
+    'user-read-private'
+    ]
 # Sets scope for SpotifyOAuth oject so it knows what privileges we're requesting for login.
 auth_manager = SpotifyOAuth(scope=scope)
 
