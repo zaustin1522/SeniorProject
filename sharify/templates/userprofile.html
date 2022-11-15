@@ -20,9 +20,13 @@
                   <span class="glyphicon glyphicon-star"></span>Edit
                 </button>
                 {% if can_link %}
-                  <br/>
-                  <a href="/link_spotify/" class="btn btn-default btn-lg text-white">
-                    <span class="glyphicon glyphicon-star"></span>Link Spotify
+                  <a href="/link_spotify/" class="btn nav-link text-white display-7">
+                    Link Spotify
+                  </a>
+                {% endif %}
+                {% if current_user.username == user.username and not needs_linking %}
+                  <a href="/unlink_spotify/" class="btn nav-link text-white display-7">
+                    Disconnect Spotify
                   </a>
                 {% endif %}
             </div>
