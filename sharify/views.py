@@ -1,27 +1,31 @@
 ###########################################################################################
 #   Imports
 ###########################################################################################
-from .forms import *
-from .models import Musicdata, User as MyUser, SpotifyProfile, Comment
+import json
+import random
+import time
+
+import requests
+import spotipy
 from django.core.handlers.wsgi import WSGIRequest
 from django.http import Http404, HttpResponseRedirect
-from django.shortcuts import redirect
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.views import generic
 from dotenv import load_dotenv
-from sharify.forms import SearchForm
 from spotipy.oauth2 import SpotifyClientCredentials, SpotifyOAuth
-import json
-import random
-import requests
-import spotipy
+
+from sharify.forms import SearchForm
+
+from .forms import *
+from .models import Comment, Musicdata, SpotifyProfile
+from .models import User as MyUser
 
 ###########################################################################################
 #   Loading Environment and Setting Spotify Controller
 ###########################################################################################
 load_dotenv()
-global_current_user: MyUser = MyUser.objects.get(id=7)
+global_current_user: MyUser
 
 # Instantiating the Spotipy unauthenticated controller
 spotipy_controller = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
@@ -76,7 +80,7 @@ class SignUpView(generic.CreateView):
 def link_spotify(request: WSGIRequest):
     if request.GET.get('code'):
         user: MyUser = request.user
-        profile: SpotifyProfile = user.profile
+        profile: SpotifyProfile | None = user.profile
         token_info: json = auth_manager.get_access_token(request.GET.get('code'), check_cache=False)
         # if user hasn't linked before
         if profile is None:
@@ -109,6 +113,15 @@ def link_spotify(request: WSGIRequest):
     # If that all failed, get authorization from Spotify
     auth_manager.show_dialog = True
     return HttpResponseRedirect(auth_manager.get_authorize_url())
+
+#-----------------------------------------------------------------------------------------#
+def unlink_spotify(request: WSGIRequest):
+    current_user: MyUser = request.user
+    profile = current_user.profile
+    current_user.profile = None
+    profile.delete()
+    current_user.save()
+    return redirect('/userprofile/')
 
 #-----------------------------------------------------------------------------------------#
 # We can probably get rid of this.
@@ -199,6 +212,7 @@ def find_album_by_name(album):
 
 #-----------------------------------------------------------------------------------------#
 def scrape_playlist(items: json):
+    global global_current_user
     for item in items:
         if item['track'] is not None and Musicdata.objects.filter(track_id = item['track']['id']).count() == 0:
             global_current_user = MyUser.objects.get(id=7)
@@ -229,10 +243,11 @@ def scrape_track(track: json):
         duration_ms  = track['duration_ms']
     )
     object.save()
-    print("[SYSTEM] :: Added " + str(object) + ".\t\tThanks, " + str(global_current_user) + "!")
+    logmessage(type = "ADD TRACK", msg = str(object))
 
 #-----------------------------------------------------------------------------------------#
 def scrape_album(album_id: str):
+    global global_current_user
     album: json = spotipy_controller.album_tracks(album_id = album_id)
     track_ids: list = []
     track: json
@@ -240,6 +255,7 @@ def scrape_album(album_id: str):
         if Musicdata.objects.filter(track_id=track['id']).count() == 0:
             track_ids.append(track['id'])
     tracks: json = spotipy_controller.tracks(tracks=track_ids)
+    logmessage(type = "ALBUM SCRAPE", msg = str(global_current_user) + " found some tracks to add!")
     for track in tracks['tracks']:
         scrape_track(track)
 
@@ -258,7 +274,6 @@ def todays_top_hits(request: WSGIRequest):
         item: json
         tracks.append(item['track']['id'])
     
-    global_current_user = MyUser.objects.get(id=7)
     scrape_playlist(items)
 
     context = {
@@ -330,21 +345,43 @@ def get_track(request: WSGIRequest):
 def show_userprofile(request: WSGIRequest):
     username = request.GET.get('username', None)
     if username is None:
-        print("failed 1")
+        logmessage(type = "PROFILE", msg = "No username specified: assuming " + str(request.user))
         return show_profile_for(request, request.user)
     findUser: MyUser = MyUser.objects.filter(username__iexact = username).first()
     if findUser is None:
-        print("failed 2: " + username)
+        logmessage(type = "PROFILE", msg = "No user found matching " + username + ": assuming " + str(request.user))
         return show_profile_for(request, request.user)
-    print("Showing profile for: " + str(findUser))
+    logmessage(type = "PROFILE", msg = "User " + username + " found: Displaying profile...")
     return show_profile_for(request, findUser)
 
 #-----------------------------------------------------------------------------------------#
+def logmessage(type: str = "SYSTEM", msg: str = "no content"):
+    print("[" + log_date_time_string() + "] :: [" + type + "] :: " + msg)
+
+#-----------------------------------------------------------------------------------------#
+monthname = [None,
+                'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+def log_date_time_string():
+    global monthname
+    """Return the current time formatted for logging."""
+    now = time.time()
+    year, month, day, hh, mm, ss, x, y, z = time.localtime(now)
+    s = "%02d/%3s/%04d %02d:%02d:%02d" % (
+            day, monthname[month], year, hh, mm, ss)
+    return s
+
+#-----------------------------------------------------------------------------------------#
 def show_profile_for(request: WSGIRequest, current_user: MyUser):
+    global global_current_user
+    print()
 
     # No user is logged in, no user was requested; go to homepage
     if current_user.username == '':
         return redirect('/')
+
+    global_current_user = current_user
 
     profile: SpotifyProfile = current_user.profile
 
@@ -403,7 +440,6 @@ def show_profile_for(request: WSGIRequest, current_user: MyUser):
     if fav_track_data is not None and 'items' in fav_track_data:
         #their favorite track wasn't in the DB: check whole album, add if necessary (2 API calls inside)
         if Musicdata.objects.filter(track_id=fav_track_data['items'][0]['id']).count() == 0:
-            global_current_user = current_user
             scrape_album(fav_track_data['items'][0]['album']['id'])
         fav_track = Musicdata.objects.get(track_id = fav_track_data['items'][0]['id'])
     else:
@@ -435,7 +471,6 @@ def show_profile_for(request: WSGIRequest, current_user: MyUser):
 
                     # Track isn't in DB: check whole album, add if necessary (2 API calls inside)
                     if Musicdata.objects.filter(track_id=track['id']).count() == 0:
-                        global_current_user = current_user
                         scrape_album(track['album']['id'])
 
                     current_track: Musicdata = Musicdata.objects.get(track_id=track['id'])

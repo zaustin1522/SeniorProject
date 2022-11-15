@@ -16,6 +16,7 @@ urlpatterns = [
     path('todays_top_hits/', views.todays_top_hits, name='todays_top_hits'),
     path('comment/', views.comment, name='comment'),
     path('link_spotify/', views.link_spotify, name='link_spotify'),
+    path('unlink_spotify/', views.unlink_spotify, name='unlink_spotify'),
 ]
 
 #-----------------------------------------------------------------------------------------#

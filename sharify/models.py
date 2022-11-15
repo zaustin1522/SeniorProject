@@ -19,12 +19,13 @@ class Musicdata(models.Model):
         ordering = ('artist', 'album_name', 'track_name',) 
 
 class SpotifyProfile(models.Model):
-    display_name = models.TextField(default = "")       # ['display_name']
-    spotify_id = models.TextField(default = "")         # ['id']
-    follower_total = models.IntegerField(default = 0)   # ['followers']['total']
-    api_access = models.TextField(default = "")         # ['href']
-    avatar_url = models.TextField(default = "")         # ['images'][0]['url']
-    token_info = models.JSONField(default = "")         # Full token object, get_access_token
+    id = models.AutoField(primary_key=True)
+    display_name = models.TextField(default = "")           # ['display_name']
+    spotify_id = models.TextField(default = "")             # ['id']
+    follower_total = models.IntegerField(default = 0)       # ['followers']['total']
+    api_access = models.TextField(default = "")             # ['href']
+    avatar_url = models.TextField(default = "")             # ['images'][0]['url']
+    token_info = models.JSONField(default = dict)           # Full token object, get_access_token
 
     def __str__(self):
         return self.spotify_id
