@@ -24,10 +24,9 @@ def show_profile_for(request: WSGIRequest, current_user: MyUser):
 
     global_current_user = current_user
 
-    profile: SpotifyProfile = current_user.profile
 
     # User does not have a linked Spotify Profile
-    if profile is None:
+    if current_user.profile is None:
         return render(request, 'userprofile.html', {
             'current_user': current_user,
             'can_link': current_user == request.user,
@@ -37,10 +36,8 @@ def show_profile_for(request: WSGIRequest, current_user: MyUser):
         }) 
 
     # Check if User's access token is expired, and refresh it if needed.
-    if auth_manager.is_token_expired(profile.token_info):
-        auth_manager.refresh_access_token(refresh_token = profile.token_info['refresh_token'])
-        profile.token_info['access_token'] = auth_manager.get_access_token()['access_token']
-        profile.save()
+    get_access_token(current_user)
+    profile: SpotifyProfile | None = current_user.profile
     
     # Get the User's most-played artist from Spotify.
     headers = {

@@ -117,3 +117,14 @@ def unlink_spotify(request: WSGIRequest):
             logmessage(type="UNLINKED", msg=current_user.username+" disconnected Spotify ID "+spotify_id)
         return redirect('/userprofile/')
     return redirect('/')
+
+#-----------------------------------------------------------------------------------------#
+def get_access_token(user: MyUser):
+    profile: SpotifyProfile | None = user.profile
+    if profile is not None:
+        if auth_manager.is_token_expired(profile.token_info):
+            auth_manager.refresh_access_token(refresh_token = profile.token_info['refresh_token'])
+            profile.token_info['access_token'] = auth_manager.get_access_token()['access_token']
+            profile.save()
+        return profile.token_info['access_token']
+    return None
