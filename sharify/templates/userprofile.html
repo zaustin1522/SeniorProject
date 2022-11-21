@@ -16,11 +16,17 @@
                 {% endif %}
                 <h5>{{ current_user.username }}</h5>
                 <p>{{ current_user.first_name }} {{ current_user.last_name }}</p>
-                <a class="btn btn-default btn-lg text-white" href="{% url 'sharify:edit_profile' %}">Edit</a>
-                {% if needs_linking and current_user.username == user.username %}
-                  <br/>
-                  <a href="/link_spotify/" class="btn btn-default btn-lg text-white">
-                    <span class="glyphicon glyphicon-star"></span>Link Spotify
+                {% if current_user.username == user.username %}
+                  <a class="btn btn-default btn-lg text-white" href="{% url 'sharify:edit_profile' %}">Edit</a>
+                {% endif %}
+                {% if can_link %}
+                  <a href="/link_spotify/" class="btn nav-link text-white display-7">
+                    Link Spotify
+                  </a>
+                {% endif %}
+                {% if current_user.username == user.username and not needs_linking %}
+                  <a href="/unlink_spotify/" class="btn nav-link text-white display-7">
+                    Disconnect Spotify
                   </a>
                 {% endif %}
             </div>
@@ -40,7 +46,7 @@
                     <div class="col-6 mb-3">
                       <h6>Listening to</h6>
                       {% if listening %}
-                        <p class="text-muted">"{{current_track_name}}" by {{current_track_artist}}</p>
+                        <p class="text-muted">{{ current_track }}</p>
                       {% else %}
                         <p class="text-muted">{{ message }}</p>
                       {% endif %}

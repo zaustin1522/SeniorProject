@@ -14,6 +14,12 @@ class SearchForm(forms.Form):
     to_year = forms.IntegerField(required=False)
 
 #-----------------------------------------------------------------------------------------#
+class CommentForm(forms.Form):
+    content_id = forms.HiddenInput()
+    user = forms.HiddenInput()
+    comment = forms.CharField(widget=forms.TextInput(), required=True)
+
+#-----------------------------------------------------------------------------------------#
 class SignupForm(UserCreationForm):
     class Meta:
         model = User
