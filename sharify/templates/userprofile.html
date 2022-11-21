@@ -17,9 +17,6 @@
                 <h5>{{ current_user.username }}</h5>
                 <p>{{ current_user.first_name }} {{ current_user.last_name }}</p>
                 <a class="btn btn-default btn-lg text-white" href="{% url 'sharify:edit_profile' %}">Edit</a>
-                <!--<button type="button" class="btn btn-default btn-lg text-white">
-                  <span class="glyphicon glyphicon-star"></span>Edit
-                </button> -->
                 {% if needs_linking and current_user.username == user.username %}
                   <br/>
                   <a href="/link_spotify/" class="btn btn-default btn-lg text-white">

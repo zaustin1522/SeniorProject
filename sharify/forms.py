@@ -33,14 +33,11 @@ class PasswordChangeForm(UserChangeForm):
 #-----------------------------------------------------------------------------------------#
 
 class EditUserProfileForm(UserChangeForm):
-    username = forms.CharField(max_length=63, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder' : 'Enter your username'}))
     first_name = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder' : 'Enter your first name'}))
     last_name = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder' : 'Enter your last name'}))
     email = forms.EmailField(widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder' : 'Enter your email'}))
     bio = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder' : 'Enter your bio'}))
     
-
-
     class Meta:
         model = User
-        fields = ['username', 'first_name', 'last_name', 'email', 'bio']
+        fields = ['first_name', 'last_name', 'email', 'bio']
