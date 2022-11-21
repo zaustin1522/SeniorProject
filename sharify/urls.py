@@ -20,7 +20,6 @@ urlpatterns = [
     path('link_spotify/', views.link_spotify, name='link_spotify'),
     path('unlink_spotify/', views.unlink_spotify, name='unlink_spotify'),
     path('edit_profile/', views.UpdateUserView.as_view(), name='edit_profile'),
-    ,
 ]
 
 #-----------------------------------------------------------------------------------------#

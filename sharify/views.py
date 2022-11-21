@@ -11,12 +11,12 @@ from django.http import Http404
 from django.urls import reverse_lazy
 from django.views import generic
 from dotenv import load_dotenv
-from .forms import SearchForm
 from spotipy.oauth2 import SpotifyClientCredentials, SpotifyOAuth
 import json
 import random
 import spotipy
-
+from .profile import *
+from .search import *
 from .forms import *
 from .models import Comment
 
