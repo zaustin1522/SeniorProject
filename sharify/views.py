@@ -10,11 +10,13 @@
 from django.http import Http404
 from django.urls import reverse_lazy
 from django.views import generic
-
-from sharify.forms import SearchForm
-from sharify.profile import *
-from sharify.search import *
-
+from dotenv import load_dotenv
+from spotipy.oauth2 import SpotifyClientCredentials, SpotifyOAuth
+import json
+import random
+import spotipy
+from .profile import *
+from .search import *
 from .forms import *
 from .models import Comment
 
@@ -144,3 +146,11 @@ def comment(request: WSGIRequest):
     return render(request, 'comment.html', {})
 
 #-----------------------------------------------------------------------------------------#
+
+class UpdateUserView(generic.UpdateView):
+    form_class = EditUserProfileForm
+    template_name = 'edit_profile.html'
+    success_url = reverse_lazy('sharify:userprofile')
+
+    def get_object(self):
+        return self.request.user

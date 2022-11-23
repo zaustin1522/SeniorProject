@@ -2,8 +2,9 @@
 #   Imports
 ###########################################################################################
 from django import forms
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, UserChangeForm
 from django.contrib.auth import get_user_model
+from django.contrib.auth.forms import (AuthenticationForm, UserChangeForm, UserCreationForm)
+
 User = get_user_model()
 
 #-----------------------------------------------------------------------------------------#
@@ -34,3 +35,16 @@ class PasswordChangeForm(UserChangeForm):
     class Meta:
         model = User
         fields = ('username', 'password')
+
+#-----------------------------------------------------------------------------------------#
+
+class EditUserProfileForm(UserChangeForm):
+    first_name = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder' : 'Enter your first name'}))
+    last_name = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder' : 'Enter your last name'}))
+    email = forms.EmailField(widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder' : 'Enter your email'}))
+    bio = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder' : 'Enter your bio'}))
+    password = None
+    
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'email', 'bio']

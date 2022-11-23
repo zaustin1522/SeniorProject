@@ -16,9 +16,9 @@
                 {% endif %}
                 <h5>{{ current_user.username }}</h5>
                 <p>{{ current_user.first_name }} {{ current_user.last_name }}</p>
-                <button type="button" class="btn btn-default btn-lg text-white">
-                  <span class="glyphicon glyphicon-star"></span>Edit
-                </button>
+                {% if current_user.username == user.username %}
+                  <a class="btn btn-default btn-lg text-white" href="{% url 'sharify:edit_profile' %}">Edit</a>
+                {% endif %}
                 {% if can_link %}
                   <a href="/link_spotify/" class="btn nav-link text-white display-7">
                     Link Spotify
