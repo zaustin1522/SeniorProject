@@ -43,6 +43,7 @@ class EditUserProfileForm(UserChangeForm):
     last_name = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder' : 'Enter your last name'}))
     email = forms.EmailField(widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder' : 'Enter your email'}))
     bio = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder' : 'Enter your bio'}))
+    password = None
     
     class Meta:
         model = User
