@@ -35,7 +35,8 @@ class User(AbstractUser):
     bio = models.TextField(default="")
     id = models.AutoField(primary_key=True)
     fav_artist = models.CharField(max_length=50, blank=True, null=True)
-    friends = models.ManyToManyField("self")
+    friends = models.JSONField(default=dict)
+    pending = models.JSONField(default=dict)
     profile = models.OneToOneField(SpotifyProfile, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
