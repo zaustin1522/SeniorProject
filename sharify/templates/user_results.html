@@ -1,0 +1,13 @@
+{% if results %}
+<div class="row d-flex justify-content-center align-items-center h-100">
+    <div class="col col-lg-8 mb-4 mb-lg-0">
+        {% for row in results %}
+        <div class="row g-0">
+            {% for current_user in row %}
+                {% include 'halfprofile.html' %}
+            {% endfor %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}

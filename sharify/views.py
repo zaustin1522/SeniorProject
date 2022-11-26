@@ -40,7 +40,7 @@ class SignUpView(generic.CreateView):
 #-----------------------------------------------------------------------------------------#
 
 ###########################################################################################
-#   Defining Views for Music Search and Browse
+#   Defining Views for Search and Browse
 ###########################################################################################
 
 #-----------------------------------------------------------------------------------------#
@@ -112,6 +112,20 @@ def get_track(request: WSGIRequest):
             if track != "":
                 tracks = find_track_by_name(track)
             return render(request, "results.html", tracks)
+
+#-----------------------------------------------------------------------------------------#
+def get_user(request: WSGIRequest):
+    if request.method == 'GET':
+        user = request.GET.get('user', None)
+        if user is None:
+            return render(request, "users.html", {})
+        else:
+            users = {}
+            if user != "":
+                print(user)
+                users = find_user_by_name(user)
+                print(users)
+            return render(request, "user_results.html", users)
 
 #-----------------------------------------------------------------------------------------#
 

@@ -1,0 +1,12 @@
+{% load static %}
+<div class="col-md-4 gradient-custom text-center text-white" style="margin: 5px; border-radius: .5rem; background: linear-gradient(to right bottom, rgb(142, 155, 224), rgb(16, 13, 160)); min-height: 30vh; width: 15vw;">
+    {% if current_user.profile is None %}
+    <img src="{% static 'images/anonymous_profile.png' %}" alt="Anonymous Avatar"
+        class="img-fluid my-5 rounded mx-auto d-block" style="width: 100px;" />
+    {% else %}
+    <img src="{{ current_user.profile.avatar_url }}" alt="Avatar"
+        class="img-fluid my-5 rounded mx-auto d-block" style="width: 100px;" />
+    {% endif %}
+    <h5>{{ current_user.username }}</h5>
+    <p>{{ current_user.first_name }} {{ current_user.last_name }}</p>
+</div>
