@@ -2,21 +2,19 @@
 
 {% block title %}Sharify - Title Search{% endblock %}
 {% block content %}
-<div class="container">
-	<section data-bs-version="5.1" class="gallery4 cid-sPTNLFvAOB" id="gallery4-z" style="background: white;">
-		<div style="min-height: 75vh;">
+<section data-bs-version="5.1" class="section form2 cid-tjoJwPWkFc" id="form02-2">
+    <div class="overlay" style="opacity: 0.7; background-color: rgb(22, 8, 48);"></div>
+    <div class="container" style="min-height: 66vh; color: white; width: 75vw;">
+		<center>
+			<h2>Title Search</h2>
 			<br>
-			<center>
-				<h2>Title Search</h2>
-				<br>
-				<input style="margin: 10px auto;" class="form-text col-8" type="text" name="track" hx-get="{% url 'sharify:get_track' %}" hx-trigger="keyup" hx-target="#search-results">
-				</input>
-				<br>
-				<div id="search-results">
-				</div>
-			</center>
+			<input style="margin: 10px auto;" class="form-text col-8" type="text" name="track" hx-get="{% url 'sharify:get_track' %}" hx-trigger="keyup" hx-target="#search-results">
+			</input>
 			<br>
-		</div>
-	</section>
-</div>
+			<div id="search-results">
+			</div>
+		</center>
+		<br>
+	</div>
+</section>
 {% endblock %}

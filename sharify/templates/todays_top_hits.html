@@ -34,16 +34,19 @@
 
 
 {% block content %}
-<section data-bs-version="5.1" class="gallery4 cid-sPTNLFvAOB" id="gallery4-z" style="background: white;">
-	<h1>Today's Top Hits</h1>
-	<br/>
+<section data-bs-version="5.1" class="section form2 cid-tjoJwPWkFc" id="form02-2" style="z-index: 0;">
+    <div class="overlay" style="z-index: 1; opacity: 0.7; background-color: rgb(22, 8, 48);"></div>
 	{% if tracks %}
-		<div class="flex-container">
-		{% for track in tracks %}
-			<div>
-				<iframe src="https://open.spotify.com/embed/track/{{ track }}" width="300" height="380" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
+		<div style="position: relative; z-index: 2;">
+			<h1 style="color: white;">Today's Top Hits</h1>
+			<br/>
+			<div class="flex-container">
+			{% for track in tracks %}
+				<div>
+					<iframe src="https://open.spotify.com/embed/track/{{ track }}" width="300" height="380" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
+				</div>
+			{% endfor %}
 			</div>
-		{% endfor %}
 		</div>
 	{% endif %}
 </section>
