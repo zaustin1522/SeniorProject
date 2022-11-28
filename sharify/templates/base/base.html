@@ -2,8 +2,10 @@
 <!DOCTYPE html>
 <html>
 
+    <!-- Begin Custom Styles -->
     {% block style %}
     {% endblock %}
+    <!-- Begin Custom Styles -->
 
     <head>
         <meta charset="UTF-8">
@@ -16,11 +18,11 @@
         <link rel="shortcut icon" href="{% static 'images/logo.png' %}" type="image/x-icon">
         <meta name="description" content="">
         
-        
         <title>
             {% block title %}
             {% endblock %}
         </title>
+
         <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}">
         <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap-grid.min.css' %}">
         <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap-reboot.min.css' %}">
@@ -35,17 +37,16 @@
         <script src="https://unpkg.com/htmx.org@1.8.0"></script>
     </head>
 
-
-
-
     <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
 
         <!-- Begin Header / Navbar -->
-        {%include 'navbar.html' %}
+        {%include 'base/navbar.html' %}
         <!-- End Header / Navbar -->
 
+        <!-- Begin Content -->
         {% block content %}
         {% endblock %}
+        <!-- End Content -->
 
         <!-- Begin Footer -->
         <section data-bs-version="5.1" class="footer2 cid-tjoNMniXUq" once="footer" id="footer02-7">
@@ -61,12 +62,18 @@
             </div>
         </section>
         <!-- End Footer -->
+
         <!-- Load Feature Scripts -->
         <script src="{% static 'bootstrap/js/bootstrap.bundle.min.js' %}"></script>
         <script src="{% static 'smoothscroll/smooth-scroll.js' %}"></script>
         <script src="{% static 'ytplayer/index.js' %}"></script>
         <script src="{% static 'dropdown/js/navbar-dropdown.js' %}"></script>
         <script src="{% static 'theme/js/script.js' %}"></script>
-	<!-- End Feature Scripts -->
+	    <!-- End Feature Scripts -->
+
+        <!-- Begin Custom Scripts -->
+        {% block scripts %}
+        {% endblock %}
+        <!-- End Custom Scripts -->
     </body>
 </html>

@@ -3,8 +3,8 @@
     <div class="col col-lg-8 mb-4 mb-lg-0">
         {% for row in results %}
         <div class="row g-0">
-            {% for current_user in row %}
-                {% include 'halfprofile.html' %}
+            {% for displayed_user in row %}
+                {% include 'profiles/halfprofile.html' %}
             {% endfor %}
         </div>
         {% endfor %}
