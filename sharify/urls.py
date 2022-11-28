@@ -21,6 +21,8 @@ urlpatterns = [
     path('link_spotify/', views.link_spotify, name='link_spotify'),
     path('unlink_spotify/', views.unlink_spotify, name='unlink_spotify'),
     path('edit_profile/', views.UpdateUserView.as_view(), name='edit_profile'),
+    path('add_friend/', views.add_friend, name='add_friend'),
+    path('remove_friend/', views.remove_friend, name='remove_friend'),
 ]
 
 #-----------------------------------------------------------------------------------------#

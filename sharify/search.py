@@ -7,6 +7,7 @@
 #-----------------------------------------------------------------------------------------#
 
 
+import json
 import random
 
 from sharify.models import Musicdata
@@ -77,6 +78,9 @@ def find_album_by_name(album):
 def find_user_by_name(user):
     query = MyUser.objects.filter(username__icontains = user)
     resp = list(query)
-    print("WAS SEARCHING FOR \"" + user + "\": FOUND" + str(resp))
-    userGrid = [resp[i:i+3] for i in range(0, len(resp), 3)]
+    users = list()
+    for another_user in resp:
+        another_user: MyUser
+        users.append(another_user)
+    userGrid = [users[i:i+3] for i in range(0, len(users), 3)]
     return {'results': userGrid}
