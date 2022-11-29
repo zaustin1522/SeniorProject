@@ -31,15 +31,19 @@ class SpotifyProfile(models.Model):
         return self.spotify_id
 
 class User(AbstractUser):
+    def __str__(self):
+        return self.username
+
+    def pending_default():
+        return {"in": [], "out": []}
+        
     dob = models.DateTimeField(blank=True, null=True)
     bio = models.TextField(default="")
     id = models.AutoField(primary_key=True)
     friends = models.JSONField(default=list)
-    pending = models.JSONField(default=dict)
+    pending = models.JSONField(default=pending_default)
     profile = models.OneToOneField(SpotifyProfile, on_delete=models.CASCADE, null=True, blank=True)
 
-    def __str__(self):
-        return self.username
 
 class Playlist(models.Model):
     id = models.CharField(max_length=120, primary_key=True)
