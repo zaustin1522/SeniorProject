@@ -115,6 +115,7 @@ def show_profile_for(request: WSGIRequest, current_user: MyUser):
 
     global_current_user = current_user
 
+
     # User does not have a linked Spotify Profile
     if current_user.profile is None:
         return render(request, 'profiles/userprofile.html', {
