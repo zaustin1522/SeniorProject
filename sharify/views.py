@@ -53,7 +53,7 @@ def todays_top_hits(request: WSGIRequest):
         tracks.append(item['track']['id'])
     
     scrape_playlist(items)
-
+    random.shuffle(tracks)
     context = {
         # Splits first 10 tracks
         'tracks': tracks[:10]
