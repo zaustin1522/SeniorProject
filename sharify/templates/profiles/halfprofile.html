@@ -1,0 +1,31 @@
+{% load static %}
+<div class="col-md-4 gradient-custom text-center text-white" style="min-height: 30vh; width: 15vw; margin: 5px; border-radius: .5rem; background: linear-gradient(to right bottom, rgb(142, 155, 224), rgb(16, 13, 160)); min-height: 30vh; width: 15vw;">
+    <a href="/userprofile/?username={{ displayed_user.username }}" class="nav-item" style="color: white;">
+        {% if displayed_user.profile is None %}
+        <img src="{% static 'images/anonymous_profile.png' %}" alt="Anonymous Avatar"
+            class="img-fluid my-5 rounded mx-auto d-block" style="width: 100px;" />
+        {% else %}
+        <img src="{{ displayed_user.profile.avatar_url }}" alt="Avatar"
+            class="img-fluid my-5 rounded mx-auto d-block" style="width: 100px;" />
+        {% endif %}
+    </a>
+    <a href="/userprofile/?username={{ displayed_user.username }}" class="nav-item" style="color: white;"><h5>{{ displayed_user.username }}</h5></a>
+    <p>{{ displayed_user.first_name }} {{ displayed_user.last_name }}</p>
+    {% if user.is_authenticated %}
+        {% if user.username != displayed_user.username %}
+            {% if displayed_user.id not in user.friends %}
+                {% if displayed_user.id not in user.pending.out %}
+                    {% if displayed_user.id not in user.pending.in %}
+                        <button class="btn btn-primary display-7" id="{{ displayed_user.id }}" onclick="newFriend(this)">Add</button>
+                    {% else %}
+                        <button class="btn btn-primary display-7" id="{{ displayed_user.id }}" onclick="acceptFriend(this)">Accept</button>
+                    {% endif %}
+                {% else %}
+                    <button class="btn btn-primary display-7" id="{{ displayed_user.id }}" onclick="revokeFriend(this)">Unsend</button>
+                {% endif %}
+            {% else %}
+                <button class="btn btn-primary display-7" id="{{ displayed_user.id }}" onclick="removeFriend(this)">Unfriend</button>
+            {% endif %}
+        {% endif %}
+    {% endif %}
+</div>

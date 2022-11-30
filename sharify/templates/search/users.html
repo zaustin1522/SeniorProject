@@ -1,0 +1,61 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Sharify - User Search{% endblock %}
+
+{% block content %}
+<section data-bs-version="5.1" class="section form2 cid-tjoJwPWkFc" id="form02-2">
+    <div class="overlay" style="opacity: 0.7; background-color: rgb(22, 8, 48);"></div>
+    <div class="container" style="min-height: 66vh; color: white; width: 90vw;">
+        <center>
+            <h2>User Search</h2>
+            <br>
+            <input style="margin: 10px auto;" class="form-text col-8" type="text" name="user-search" hx-get="{% url 'sharify:get_user' %}" hx-trigger="keyup" hx-target="#search-results">
+            </input>
+            <br>
+            <div id="search-results">
+            </div>
+        </center>
+        <br>
+	</div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function newFriend(elem) {
+        let http = new XMLHttpRequest;
+        let url = '/add_friend/?other=' + elem.id;
+        http.open('GET', url);
+        http.send(null);
+        elem.innerHTML = "Unsend";
+        elem.setAttribute("onclick", "revokeFriend(this)");
+    }
+
+    function acceptFriend(elem) {
+        let http = new XMLHttpRequest;
+        let url = '/add_friend/?other=' + elem.id;
+        http.open('GET', url);
+        http.send(null);
+        elem.innerHTML = "Unfriend";
+        elem.setAttribute("onclick", "removeFriend(this)");
+    }
+
+    function revokeFriend(elem) {
+        let http = new XMLHttpRequest;
+        let url = '/remove_friend/?other=' + elem.id;
+        http.open('GET', url);
+        http.send(null);
+        elem.innerHTML = "Add";
+        elem.setAttribute("onclick", "newFriend(this)");
+    }
+
+    function removeFriend(elem) {
+        let http = new XMLHttpRequest;
+        let url = '/remove_friend/?other=' + elem.id;
+        http.open('GET', url);
+        http.send(null);
+        elem.innerHTML = "Accept";
+        elem.setAttribute("onclick", "acceptFriend(this)");
+    }
+</script>
+{% endblock %}

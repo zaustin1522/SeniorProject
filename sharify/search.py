@@ -7,14 +7,15 @@
 #-----------------------------------------------------------------------------------------#
 
 
+import json
 import random
 
 from sharify.models import Musicdata
-
+from sharify.models import User as MyUser
 
 #-----------------------------------------------------------------------------------------#
 def find_albums(artist, from_year = None, to_year = None):
-    query = Musicdata.objects.filter(artist__contains = artist)
+    query = Musicdata.objects.filter(artist__icontains = artist)
     if from_year is not None:
         query = query.filter(album_release_date__gte = from_year)
     if to_year is not None:
@@ -72,3 +73,14 @@ def find_album_by_name(album):
         'results': albumGrid,
 	'type': "album"
     }
+
+#-----------------------------------------------------------------------------------------#
+def find_user_by_name(user):
+    query = MyUser.objects.filter(username__icontains = user)
+    resp = list(query)
+    users = list()
+    for another_user in resp:
+        another_user: MyUser
+        users.append(another_user)
+    userGrid = [users[i:i+3] for i in range(0, len(users), 3)]
+    return {'results': userGrid}

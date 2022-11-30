@@ -1,0 +1,79 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+
+    <!-- Begin Custom Styles -->
+    {% block style %}
+    {% endblock %}
+    <!-- Begin Custom Styles -->
+
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="twitter:card" content="summary_large_image"/>
+        <meta name="twitter:image:src" content="">
+        <meta property="og:image" content="">
+        <meta name="twitter:title" content="Home">
+        <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+        <link rel="shortcut icon" href="{% static 'images/logo.png' %}" type="image/x-icon">
+        <meta name="description" content="">
+        
+        <title>
+            {% block title %}
+            {% endblock %}
+        </title>
+
+        <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}">
+        <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap-grid.min.css' %}">
+        <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap-reboot.min.css' %}">
+        <link rel="stylesheet" href="{% static 'dropdown/css/style.css' %}">
+        <link rel="stylesheet" href="{% static 'socicon/css/styles.css' %}">
+        <link rel="stylesheet" href="{% static 'theme/css/style.css' %}">
+        <link rel="preload" href="https://fonts.googleapis.com/css?family=Urbanist:100,200,300,400,500,600,700,800,900,100i,200i,300i,400i,500i,600i,700i,800i,900i&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+        <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Urbanist:100,200,300,400,500,600,700,800,900,100i,200i,300i,400i,500i,600i,700i,800i,900i&display=swap"></noscript>
+        <link rel="preload" as="style" href="{% static 'css/additional.css' %}"><link rel="stylesheet" href="{% static 'css/additional.css' %}" type="text/css">
+
+        <!-- HTMX -->
+        <script src="https://unpkg.com/htmx.org@1.8.0"></script>
+    </head>
+
+    <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+
+        <!-- Begin Header / Navbar -->
+        {%include 'base/navbar.html' %}
+        <!-- End Header / Navbar -->
+
+        <!-- Begin Content -->
+        {% block content %}
+        {% endblock %}
+        <!-- End Content -->
+
+        <!-- Begin Footer -->
+        <section data-bs-version="5.1" class="footer2 cid-tjoNMniXUq" once="footer" id="footer02-7">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-2">
+                    <h4 class="text align-left m-0 p-0 fonts-style display-5"><strong>Sharify</strong><strong><br></strong></h4>
+                    </div>
+                    <div class="col-md-12 flex col-lg-4 my-auto px-4 align-left">
+                        <p class="text text-grey mb-0 fonts-style display-7">Listen without Limits<br></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- End Footer -->
+
+        <!-- Load Feature Scripts -->
+        <script src="{% static 'bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+        <script src="{% static 'smoothscroll/smooth-scroll.js' %}"></script>
+        <script src="{% static 'ytplayer/index.js' %}"></script>
+        <script src="{% static 'dropdown/js/navbar-dropdown.js' %}"></script>
+        <script src="{% static 'theme/js/script.js' %}"></script>
+	    <!-- End Feature Scripts -->
+
+        <!-- Begin Custom Scripts -->
+        {% block scripts %}
+        {% endblock %}
+        <!-- End Custom Scripts -->
+    </body>
+</html>
