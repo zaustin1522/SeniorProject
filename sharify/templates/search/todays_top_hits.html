@@ -1,0 +1,53 @@
+{% extends 'base/base.html' %}
+
+{% block title %}
+	Sharify - Today's Top Hits
+{% endblock %}
+
+
+{% block style %}
+	<style>
+		h1 {
+			font-family: Arial, sans-serif;
+			text-align: Center;
+		}
+
+		.flex-container {
+			width: 85vw;
+			display: flex;
+			flex-wrap: wrap;
+			margin: 0 auto;
+			justify-content: space-around;
+		}
+
+		.flex-container > div {
+			width: 15vw;
+			margin: 0.5vh 0;
+			line-height: 75px;
+			font-size: 30px;
+		}
+		iframe {
+			margin: 0 auto;
+		}
+	</style>
+{% endblock %}
+
+
+{% block content %}
+<section data-bs-version="5.1" class="section form2 cid-tjoJwPWkFc" id="form02-2" style="z-index: 0;">
+    <div class="overlay" style="z-index: 1; opacity: 0.7; background-color: rgb(22, 8, 48);"></div>
+	{% if tracks %}
+		<div style="position: relative; z-index: 2;">
+			<h1 style="color: white;">Today's Top Hits</h1>
+			<br/>
+			<div class="flex-container">
+			{% for track in tracks %}
+				<div>
+					<iframe src="https://open.spotify.com/embed/track/{{ track }}" width="300" height="380" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
+				</div>
+			{% endfor %}
+			</div>
+		</div>
+	{% endif %}
+</section>
+{% endblock %}

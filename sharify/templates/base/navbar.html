@@ -1,0 +1,48 @@
+{% load static %}
+<section data-bs-version="5.1" class="menu menu1 cid-sPTNINWSSI" once="menu" id="menu1-y">
+    <nav class="navbar navbar-dropdown navbar-expand-lg">
+        <div class="container-fluid">
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbarSupportedContent" data-bs-target="#navbarSupportedContent" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+                <div class="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </button>
+            <div class="navbar-brand">
+                <span class="navbar-caption-wrap"><a class="navbar-caption text-black display-5" href="/"><img src="{% static 'images/logo.png' %}" style="width:75px;"/><strong style="margin: auto 0 0;">Sharify</strong>
+                </a></span>
+            </div>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav nav-dropdown" data-app-modern-menu="true">
+                    <li class="nav-item">
+                        {% if user.is_authenticated %}
+                        <a class="nav-link link text-black display-4" href="/userprofile/">Profile<br></a>
+                        {% endif %}
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link link text-black dropdown-toggle display-4" href="#" data-toggle="dropdown-submenu" data-bs-toggle="dropdown" data-bs-auto-close="outside">Browse<br></a>
+                        <div class="dropdown-menu" data-bs-popper="none" aria-labelledby="dropdown-649">
+                            <a class="text-black dropdown-item" href="/search/artist/">Search by Artist</a>
+                            <a class="text-black dropdown-item" href="/search/album/">Search by Album</a>
+                            <a class="text-black dropdown-item" href="/search/track/">Search by Title</a>
+                            <a class="text-black dropdown-item" href="/search/user/">Search for Users</a>
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link link text-black display-4" href="/todays_top_hits/">Today's Top Hits<br></a>
+                    </li>
+                </ul>
+            </div>
+            <div class="navbar-buttons section-btn">
+                {% if user.is_authenticated %}
+                    <a class="btn btn-primary display-7" href="{% url 'logout' %}">Log Out<br></a>
+                {% else %}
+                    <a class="btn btn-primary display-7" href="{% url 'login' %}">Log In<br></a>
+                    <a class="btn btn-primary display-7" href="{% url 'signup' %}">Sign Up<br></a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+</section>

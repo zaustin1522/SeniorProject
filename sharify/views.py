@@ -10,11 +10,7 @@
 from django.http import Http404
 from django.urls import reverse_lazy
 from django.views import generic
-from dotenv import load_dotenv
-from spotipy.oauth2 import SpotifyClientCredentials, SpotifyOAuth
 import json
-import random
-import spotipy
 from .profile import *
 from .search import *
 from .forms import *
@@ -29,7 +25,7 @@ from .models import Comment
 
 #-----------------------------------------------------------------------------------------#
 def homepage(request):
-    return render(request, 'home.html', {})
+    return render(request, 'base/home.html', {})
 
 #-----------------------------------------------------------------------------------------#
 class SignUpView(generic.CreateView):
@@ -40,7 +36,7 @@ class SignUpView(generic.CreateView):
 #-----------------------------------------------------------------------------------------#
 
 ###########################################################################################
-#   Defining Views for Music Search and Browse
+#   Defining Views for Search and Browse
 ###########################################################################################
 
 #-----------------------------------------------------------------------------------------#
@@ -58,7 +54,7 @@ def todays_top_hits(request: WSGIRequest):
         # Splits first 10 tracks
         'tracks': tracks[:10]
     }
-    return render(request, 'todays_top_hits.html', context)
+    return render(request, 'search/todays_top_hits.html', context)
 
 #-----------------------------------------------------------------------------------------#
 def get_artist(request: WSGIRequest):
@@ -78,7 +74,7 @@ def get_artist(request: WSGIRequest):
 
             answer = albums[:9]
             albumGrid = [answer[i:i+3] for i in range(0, len(answer), 3)]
-            return render(request, 'artist.html', {
+            return render(request, 'search/artist.html', {
                 'form': form,
                 'results': albumGrid,
                 'type': "album"
@@ -87,31 +83,43 @@ def get_artist(request: WSGIRequest):
             raise Http404('Something went wrong')
     else:
         form = SearchForm()
-        return render(request, 'artist.html', {'form': form})
+        return render(request, 'search/artist.html', {'form': form})
 
 #-----------------------------------------------------------------------------------------#
 def get_album(request: WSGIRequest):
     if request.method == 'GET':
         album = request.GET.get('album', None)
         if album is None:
-            return render(request, "album.html", {})
+            return render(request, "search/album.html", {})
         else:
             albums = {}
             if album != "":
                 albums = find_album_by_name(album)
-            return render(request, "results.html", albums)
+            return render(request, "results/results.html", albums)
 
 #-----------------------------------------------------------------------------------------#
 def get_track(request: WSGIRequest):
     if request.method == 'GET':
         track = request.GET.get('track', None)
         if track is None:
-            return render(request, "track.html", {})
+            return render(request, "search/track.html", {})
         else:
             tracks = {}
             if track != "":
                 tracks = find_track_by_name(track)
-            return render(request, "results.html", tracks)
+            return render(request, "results/results.html", tracks)
+
+#-----------------------------------------------------------------------------------------#
+def get_user(request: WSGIRequest):
+    if request.method == 'GET':
+        user = request.GET.get('user-search', None)
+        if user is None:
+            return render(request, "search/users.html", {})
+        else:
+            user_data = {}
+            if user != "":
+                user_data = find_user_by_name(user)
+            return render(request, "results/user_results.html", user_data)
 
 #-----------------------------------------------------------------------------------------#
 
@@ -143,13 +151,13 @@ def comment(request: WSGIRequest):
              user: MyUser = request.user
              comment: str = str(form.cleaned_data['comment'])
              Comment.objects.create(comment_on=comment_on, user=user, comment=comment)
-    return render(request, 'comment.html', {})
+    return render(request, 'social/comment.html', {})
 
 #-----------------------------------------------------------------------------------------#
 
 class UpdateUserView(generic.UpdateView):
     form_class = EditUserProfileForm
-    template_name = 'edit_profile.html'
+    template_name = 'profiles/edit_profile.html'
     success_url = reverse_lazy('sharify:userprofile')
 
     def get_object(self):

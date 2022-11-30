@@ -1,0 +1,57 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% block title %}Sharify - Home{% endblock %}
+{% block content %}
+<section data-bs-version="5.1" class="gallery4 cid-sPTNLFvAOB" id="gallery4-z">
+    <div class="main-container-text">
+        <h3 class="item-title fonts-style align-center mb-2 display-1">
+            <strong>All your music.</strong><div><strong>Anytime.</strong></div><div><strong>Anywhere.</strong></div></h3>
+        <p class="text fonts-style align-center mb-0 display-4">
+            Let's listen together.</p>
+    </div>
+    <div class="main-container col-12">
+        <div class="card-container col-12">
+            <div class="col-12 card">
+                <div class="item-img">
+                    <img src="{% static 'images/party-people-g0e7812948-1920-1920x603.jpg' %}" alt="">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<section data-bs-version="5.1" class="header10 cid-sPTO3tPEJ6" id="header10-13">
+    <div class="overlay" style="opacity: 0.9; background-color: rgb(0, 87, 252);"></div>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12">
+                <div class="text-wrapper">
+                    <div class="header-text">
+                        <h2 class="section-title fonts-style align-center display-2"><strong>Your library. Your friends. Your new home for social music.</strong></h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<section data-bs-version="5.1" class="people1 cid-sPTO6hXWlu" id="people1-14">
+    <div class="container">
+        <div class="row img-row">
+            <div class="item сol-12">
+                <div class="item-img">
+                    <img src="{% static 'images/features14.png' %}">
+                </div>
+            </div>
+        </div>
+        <div class="row img-row">
+            <div class="item сol-12">
+                <div class="section-head">
+                    <h4 class="section-title fonts-style align-center display-1"><strong>Log in or sign up now.</strong></h4>
+                    <div class="btn-item">
+                        <div class="section-btn align-center mt-2"><a href="{% url 'login' %}" class="btn btn-primary item-btn display-7">Start Listening<br></a></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
