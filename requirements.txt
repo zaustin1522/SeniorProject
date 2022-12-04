@@ -2,3 +2,4 @@ Django==3.2.15
 spotipy==2.20
 python-dotenv==0.21.0
 Pillow==9.3.0
+exrex==0.10.5

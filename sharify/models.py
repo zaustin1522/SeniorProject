@@ -48,15 +48,9 @@ class User(AbstractUser):
 class Playlist(models.Model):
     id = models.CharField(max_length=120, primary_key=True)
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
-    spotify_id = models.CharField(max_length=120, default="null")
     name = models.TextField(max_length=100)
-    url = models.CharField(max_length=1000)
-    num_tracks = models.IntegerField(null=True)
-    featured = models.BooleanField(default=False)
-    genre = models.CharField(max_length=100)
-    date_created = models.CharField(max_length=500, default="No date")
-    image = models.ImageField(blank=True, default="")
-    songs = models.ManyToManyField(Musicdata)
+    date_created = models.DateTimeField(default = timezone.now)
+    songs = models.JSONField(default=list)
 
     def __str__(self):
         return self.name

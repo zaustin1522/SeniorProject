@@ -10,11 +10,11 @@
 from django.http import Http404
 from django.urls import reverse_lazy
 from django.views import generic
-import json
+import json, exrex
 from .profile import *
 from .search import *
 from .forms import *
-from .models import Comment
+from .models import Comment, Playlist
 
 
 #-----------------------------------------------------------------------------------------#
@@ -154,7 +154,58 @@ def comment(request: WSGIRequest):
     return render(request, 'social/comment.html', {})
 
 #-----------------------------------------------------------------------------------------#
+def playlist_search_by_name(request: WSGIRequest,):
+    playlist_qset = Playlist.objects.all().filter(name__contains='name_from_form?')
+    # not sure how you want to use this data to display on a page
+    return render(request, 'base/home.html', {})
 
+#-----------------------------------------------------------------------------------------#
+def make_playlist(request: WSGIRequest):
+    playlist = Playlist.objects.create(
+            id = exrex.getone('[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}'),       # using regex to create id (duplication is possible here, but like django won't let me migrate the automated primary keys?)
+            user = request.user,
+            name = 'name_from_form?',
+        )
+    playlist.save()
+    return render(request, 'base/home.html', {})
+
+#-----------------------------------------------------------------------------------------#
+def delete_playlist(request: WSGIRequest):
+    playlist = Playlist.objects.all().filter(id='g90h-vne8-qgpd-bm2x')     # grab id from frontend
+    playlist.delete()
+    return render(request, 'base/home.html', {})
+
+#-----------------------------------------------------------------------------------------#
+def add_to_playlist(request: WSGIRequest):
+    playlist = Playlist.objects.all().filter(id='l31s-q8jo-e4r9-lc8t')[0]     # playlist selected from frontend
+    song = Musicdata.objects.all().filter(track_id='6f807x0ima9a1j3VPbc7VN')[0]    # song selected from frontend
+    playlist.songs.append(song.pk)
+    playlist.save()
+    return render(request, 'base/home.html', {})
+
+#-----------------------------------------------------------------------------------------#
+def remove_from_playlist(request: WSGIRequest):
+    playlist = Playlist.objects.all().filter(id='l31s-q8jo-e4r9-lc8t')[0]     # playlist selected from frontend
+    song = Musicdata.objects.all().filter(track_id='6f807x0ima9a1j3VPbc7VN')[0]    # song selected from frontend
+    playlist.songs.remove(song.pk)
+    playlist.save()
+    return render(request, 'base/home.html', {})
+
+#-----------------------------------------------------------------------------------------#
+def add_playlist_to_spotify(request: WSGIRequest):
+    playlist = Playlist.objects.all().filter(id='l31s-q8jo-e4r9-lc8t')[0]     # playlist selected from frontend
+    scope = [
+        'playlist-modify-private',      # "Create, edit, and follow private playlists"
+        'playlist-modify-public',       # "Create, edit, and follow playlists"
+    ]
+    auth_manager = SpotifyOAuth(scope=scope)
+    token_info = auth_manager.refresh_access_token(refresh_token = request.user.profile.token_info['refresh_token'])
+    sp = spotipy.Spotify(auth=token_info['access_token'])
+    sp_playlist = sp.user_playlist_create(user=sp.current_user()['id'], name=playlist.name)
+    sp.playlist_add_items(playlist_id = sp_playlist['id'], items=playlist.songs)
+    return render(request, 'base/home.html', {})
+
+#-----------------------------------------------------------------------------------------#
 class UpdateUserView(generic.UpdateView):
     form_class = EditUserProfileForm
     template_name = 'profiles/edit_profile.html'
