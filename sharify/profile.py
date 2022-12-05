@@ -12,14 +12,35 @@ from django.shortcuts import render
 
 from sharify.auth import *
 from sharify.scrape import *
+from sharify.models import Playlist
 
 
 #-----------------------------------------------------------------------------------------#
 def get_friend_objects(current_user: MyUser):
     friend_ids: list = current_user.friends
-    friend_query: MyUser.objects.filter(id__in=friend_ids)
+    friend_query = MyUser.objects.filter(id__in=friend_ids)
     friend_list: list = list(friend_query)
     return friend_list
+
+#-----------------------------------------------------------------------------------------#
+def get_inbox_objects(current_user: MyUser):
+    ids: list = current_user.pending['in']
+    inbox_query = MyUser.objects.filter(id__in=ids)
+    inbox_list: list = list(inbox_query)
+    return inbox_list
+
+#-----------------------------------------------------------------------------------------#
+def get_outbox_objects(current_user: MyUser):
+    ids: list = current_user.pending['out']
+    outbox_query = MyUser.objects.filter(id__in=ids)
+    outbox_list: list = list(outbox_query)
+    return outbox_list
+
+#-----------------------------------------------------------------------------------------#
+def get_playlist_objects(current_user: MyUser):
+    playlist_query = Playlist.objects.filter(user=current_user)
+    playlist_list: list = list(playlist_query)
+    return playlist_list
 
 #-----------------------------------------------------------------------------------------#
 def add_friend(request: WSGIRequest):
@@ -115,11 +136,19 @@ def show_profile_for(request: WSGIRequest, current_user: MyUser):
 
     global_current_user = current_user
 
+    friends = get_friend_objects(current_user)
+    inbox = get_inbox_objects(current_user)
+    outbox = get_outbox_objects(current_user)
+    playlists = get_playlist_objects(current_user)
 
     # User does not have a linked Spotify Profile
     if current_user.profile is None:
         return render(request, 'profiles/userprofile.html', {
             'current_user': current_user,
+            'friends': friends,
+            'inbox': inbox,
+            'outbox': outbox,
+            'playlists': playlists,
             'can_link': current_user == request.user,
             'needs_linking': True,
             'message': current_user.username + " hasn't linked Spotify!",
@@ -145,6 +174,10 @@ def show_profile_for(request: WSGIRequest, current_user: MyUser):
     if response.status_code == 403:
         return render(request, 'profiles/userprofile.html', {
             'current_user': current_user,
+            'friends': friends,
+            'inbox': inbox,
+            'outbox': outbox,
+            'playlists': playlists,
             'needs_linking': current_user == request.user,
             'message': "Something went wrong, try again later!",
             'fav_artist': "What IS art, really?"
@@ -161,6 +194,10 @@ def show_profile_for(request: WSGIRequest, current_user: MyUser):
     if response.status_code == 403:
         return render(request, 'profiles/userprofile.html', {
             'current_user': current_user,
+            'friends': friends,
+            'inbox': inbox,
+            'outbox': outbox,
+            'playlists': playlists,
             'needs_linking': current_user == request.user,
             'message': "Something went wrong, try again later!",
             'fav_artist': fav_artist
@@ -184,6 +221,10 @@ def show_profile_for(request: WSGIRequest, current_user: MyUser):
     elif response.status_code == 403:
         return render(request, 'profiles/userprofile.html', {
             'current_user': current_user,
+            'friends': friends,
+            'inbox': inbox,
+            'outbox': outbox,
+            'playlists': playlists,
             'needs_linking': current_user == request.user,
             'message': "Something went wrong, try again later!",
             'fav_artist': fav_artist,
@@ -205,6 +246,10 @@ def show_profile_for(request: WSGIRequest, current_user: MyUser):
                     current_track: Musicdata = Musicdata.objects.get(track_id=track['id'])
                     return render(request, 'profiles/userprofile.html', {
                         'current_user': current_user,
+                        'friends': friends,
+                        'inbox': inbox,
+                        'outbox': outbox,
+                        'playlists': playlists,
                         'listening': True,
                         'current_track': str(current_track),
                         'fav_artist': fav_artist,
@@ -213,6 +258,10 @@ def show_profile_for(request: WSGIRequest, current_user: MyUser):
                 else:
                     return render(request, 'profiles/userprofile.html', {
                         'current_user': current_user,
+                        'friends': friends,
+                        'inbox': inbox,
+                        'outbox': outbox,
+                        'playlists': playlists,
                         'listening': False,
                         'message': "An ad!",
                         'fav_artist': fav_artist,
@@ -221,6 +270,10 @@ def show_profile_for(request: WSGIRequest, current_user: MyUser):
     # User is linked to Spotify, but isn't listening to anything.
     return render(request, 'profiles/userprofile.html', {
         'current_user': current_user,
+        'friends': friends,
+        'inbox': inbox,
+        'outbox': outbox,
+        'playlists': playlists,
         'listening': False,
         'message': "Nothing right now!",
         'fav_artist': fav_artist,
