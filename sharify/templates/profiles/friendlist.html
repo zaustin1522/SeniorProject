@@ -1,0 +1,174 @@
+{% load static %}
+
+<ul class="nav nav-tabs" role="tablist" style="margin-bottom: 0 !important; min-height: 10% !important;">
+    <li class="nav-item col-12 text fonts-style" style="flex: 0 0 auto; width: 33.3333333333%;">
+        <a id="friendtab" class="nav-link fonts-style show active display-7" style="background:rgba(255, 255, 255, .75); color: black;" role="tab" data-toggle="tab" data-bs-toggle="tab" onclick="showFriends()" aria-selected="true">
+            Friends
+        </a>
+    </li>
+    {% if user.is_authenticated and user.username == current_user.username %}
+    <li class="nav-item col-12 text fonts-style" style="flex: 0 0 auto; width: 33.3333333333%;">
+        <a id="inboxtab" class="nav-link fonts-style active display-7" style="background:rgba(255, 255, 255, .25); color: black;" role="tab" data-toggle="tab" data-bs-toggle="tab" onclick="showInbox()" aria-selected="true">
+            Received
+        </a>
+    </li>
+    <li class="nav-item col-12 text fonts-style" style="flex: 0 0 auto; width: 33.3333333333%;">
+        <a id="senttab" class="nav-link fonts-style active display-7" style="background:rgba(255, 255, 255, .25); color: black;" role="tab" data-toggle="tab" data-bs-toggle="tab" onclick="showSent()" aria-selected="true">
+            Sent
+        </a>
+    </li>
+    {% endif %}
+</ul>
+<div id="friendlist" style="width: 100%; margin: 0 auto; aspect-ratio: 1/1.15; overflow-y: scroll;">
+    <table style="margin: 0 auto; width: 100%; max-height: 100%; background-color: rgba(0, 0, 0, .15); border-bottom-left-radius: .5rem; border-bottom-right-radius: .5rem;">
+        <tbody style="max-height: 100%;">
+        {% for friend in friends %}
+            <tr style="border-top: 1px solid white; height: 54px;">
+                {% if user.is_authenticated and current_user.username == user.username %}
+                <td style="text-align: left; padding-left: 5px;"> 
+                    <a style="color: white;" href="/userprofile/?username={{friend.username}}">{{ friend.username }}</a>
+                </td>
+                <td style="text-align: right;">
+                    <button style="background-color:rgba(255, 255, 255, .75) !important; color:black !important; padding: 7px 14px;" class="btn btn-primary display-7" id="{{ friend.id }}" onclick="removeFriend(this)">Unfriend</button>
+                </td>
+                {% else %}
+                <td style="text-align: center;"> 
+                    <a style="color: white;" href="/userprofile/?username={{friend.username}}">{{ friend.username }}</a>
+                </td>
+                {% endif %}
+            </tr>
+        {% empty %}
+            <tr>
+                <td style="padding: 20px; color: white;">Nobody here but us chickens!</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+<div id="inbox" hidden="True" style="width: 100%; margin: 0 auto; aspect-ratio: 1/1.15; overflow-y: scroll;">
+    <table style="margin: 0 auto; width: 100%; max-height: 100%; background-color: rgba(0, 0, 0, .15); border-bottom-left-radius: .5rem; border-bottom-right-radius: .5rem;">
+        {% for req in inbox %}
+        <tr style="border-top: 1px solid white; height: 54px;">
+            <td style="text-align: left;"> 
+                <a style="color: white;" href="/userprofile/?username={{req.username}}">{{ req.username }}</a>
+            </td>
+            <td style="text-align: right;">
+                <button style="background-color:rgba(255, 255, 255, .75) !important; color:black !important; padding: 7px 14px;" class="btn btn-primary display-7" id="{{ req.id }}" onclick="acceptFriend(this)">Accept</button>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td style="padding: 20px; color: white;">Nobody here but us chickens!</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+<div id="sentbox" hidden="True" style="width: 100%; margin: 0 auto; aspect-ratio: 1/1.15; overflow-y: scroll;">
+    <table style="margin: 0 auto; width: 100%; max-height: 100%; background-color: rgba(0, 0, 0, .15); border-bottom-left-radius: .5rem; border-bottom-right-radius: .5rem;">
+        {% for req in outbox %}
+        <tr style="border-top: 1px solid white; height: 54px;">
+            <td style="text-align: left;">
+                <a style="color: white;" href="/userprofile/?username={{req.username}}">{{ req.username }}</a>
+            </td>
+            <td style="text-align: right;">
+                <button style="background-color:rgba(255, 255, 255, .75) !important; color:black !important; padding: 7px 14px;" class="btn btn-primary display-7" id="{{ req.id }}" onclick="revokeFriend(this)">Cancel</button>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td style="padding: 20px; color: white;">Nobody here but us chickens!</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+{% block scripts %}
+<script>
+    function newFriend(elem) {
+        let http = new XMLHttpRequest;
+        let url = '/add_friend/?other=' + elem.id;
+        http.open('GET', url);
+        http.send(null);
+        elem.innerHTML = "Cancel";
+        elem.setAttribute("onclick", "revokeFriend(this)");
+    }
+
+    function acceptFriend(elem) {
+        let http = new XMLHttpRequest;
+        let url = '/add_friend/?other=' + elem.id;
+        http.open('GET', url);
+        http.send(null);
+        elem.innerHTML = "Unfriend";
+        elem.setAttribute("onclick", "removeFriend(this)");
+    }
+
+    function revokeFriend(elem) {
+        let http = new XMLHttpRequest;
+        let url = '/remove_friend/?other=' + elem.id;
+        http.open('GET', url);
+        http.send(null);
+        elem.innerHTML = "Add";
+        elem.setAttribute("onclick", "newFriend(this)");
+    }
+
+    function removeFriend(elem) {
+        let http = new XMLHttpRequest;
+        let url = '/remove_friend/?other=' + elem.id;
+        http.open('GET', url);
+        http.send(null);
+        elem.innerHTML = "Accept";
+        elem.setAttribute("onclick", "acceptFriend(this)");
+    }
+
+    function outerFind(a, b) {
+        var d=Array.from(a.querySelectorAll(b));
+        a.matches(b) && d.splice(0, 0, a);
+        return d;
+    }
+
+    function showFriends() {
+        friendlist = document.getElementById("friendlist");
+        friendtab = document.getElementById("friendtab");
+        inbox = document.getElementById("inbox");
+        inboxtab = document.getElementById("inboxtab");
+        sentbox = document.getElementById("sentbox");
+        senttab = document.getElementById("senttab");
+        friendlist.hidden = false;
+        friendtab.style.setProperty("background", "rgba(255, 255, 255, .75)");
+        inbox.hidden = true;
+        inboxtab.style.setProperty("background", "rgba(255, 255, 255, .25)");
+        sentbox.hidden = true;
+        senttab.style.setProperty("background", "rgba(255, 255, 255, .25)");
+    }
+
+    function showInbox() {
+        friendlist = document.getElementById("friendlist");
+        friendtab = document.getElementById("friendtab");
+        inbox = document.getElementById("inbox");
+        inboxtab = document.getElementById("inboxtab");
+        sentbox = document.getElementById("sentbox");
+        senttab = document.getElementById("senttab");
+        friendlist.hidden = true;
+        friendtab.style.setProperty("background", "rgba(255, 255, 255, .25)");
+        inbox.hidden = false;
+        inboxtab.style.setProperty("background", "rgba(255, 255, 255, .75)");
+        sentbox.hidden = true;
+        senttab.style.setProperty("background", "rgba(255, 255, 255, .25)");
+    }
+
+    function showSent() {
+        friendlist = document.getElementById("friendlist");
+        friendtab = document.getElementById("friendtab");
+        inbox = document.getElementById("inbox");
+        inboxtab = document.getElementById("inboxtab");
+        sentbox = document.getElementById("sentbox");
+        senttab = document.getElementById("senttab");
+        friendlist.hidden = true;
+        friendtab.style.setProperty("background", "rgba(255, 255, 255, .25)");
+        inbox.hidden = true;
+        inboxtab.style.setProperty("background", "rgba(255, 255, 255, .25)");
+        sentbox.hidden = false;
+        senttab.style.setProperty("background", "rgba(255, 255, 255, .75)");
+    }
+</script>
+{% endblock %}
