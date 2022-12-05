@@ -13,7 +13,11 @@
                 <div class="form-wrap" data-form-type="formoid">
                     <form class="form form-with-styler" method="post">
                         {%csrf_token %}
-                        {{ form }}
+                        {% for field in form %}
+                        <p>
+                            {{ field.label_tag }}
+                            {{ field }}</p>
+                        {% endfor %}
                         <div class="col-md-12 input-group-btn mt-2">
                             <input type="submit" class="btn btn-primary btn-form btn-bgr display-4" value="Update Profile" />
                         </div>
