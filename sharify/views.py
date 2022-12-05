@@ -10,7 +10,7 @@
 from django.http import Http404
 from django.urls import reverse_lazy
 from django.views import generic
-import json, exrex
+import json
 from .profile import *
 from .search import *
 from .forms import *
@@ -155,55 +155,97 @@ def comment(request: WSGIRequest):
 
 #-----------------------------------------------------------------------------------------#
 def playlist_search_by_name(request: WSGIRequest,):
-    playlist_qset = Playlist.objects.all().filter(name__contains='name_from_form?')
-    # not sure how you want to use this data to display on a page
-    return render(request, 'base/home.html', {})
+    query = request.GET.get("query")
+    playlist_qset = Playlist.objects.filter(name__icontains=query)
+    temp = list(playlist_qset)
+    resp = []
+    [resp.append(playlist) for playlist in temp if playlist not in resp]
+    # Randomize to get different results each time
+    random.shuffle(resp)
+    # Return the id of up to 9 playlists
+    playlists = [item['album_id'] for item in resp[:9]]
+    playlistGrid = [playlists[i:i+3] for i in range(0, len(playlists), 3)]
+    return {
+        'results': playlistGrid,
+	    'type': "playlist"
+    }
 
 #-----------------------------------------------------------------------------------------#
 def make_playlist(request: WSGIRequest):
+    name = request.GET.get("playlist_name")
+    user: MyUser = request.user
     playlist = Playlist.objects.create(
-            id = exrex.getone('[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}'),       # using regex to create id (duplication is possible here, but like django won't let me migrate the automated primary keys?)
-            user = request.user,
-            name = 'name_from_form?',
+            user = user,
+            name = name
         )
     playlist.save()
-    return render(request, 'base/home.html', {})
+    return HttpResponse(code=201)
 
 #-----------------------------------------------------------------------------------------#
 def delete_playlist(request: WSGIRequest):
-    playlist = Playlist.objects.all().filter(id='g90h-vne8-qgpd-bm2x')     # grab id from frontend
+    target = request.GET.get("deleting_id")
+    try:
+        playlist = Playlist.objects.get(id=target)     # grab id from frontend
+    except Playlist.DoesNotExist:
+        return HttpResponse(code=422, content="No such playlist with id " + target)
+
     playlist.delete()
-    return render(request, 'base/home.html', {})
+    return HttpResponse(code=200)
 
 #-----------------------------------------------------------------------------------------#
 def add_to_playlist(request: WSGIRequest):
-    playlist = Playlist.objects.all().filter(id='l31s-q8jo-e4r9-lc8t')[0]     # playlist selected from frontend
-    song = Musicdata.objects.all().filter(track_id='6f807x0ima9a1j3VPbc7VN')[0]    # song selected from frontend
-    playlist.songs.append(song.pk)
+    new_song = request.GET.get("song_id")
+    target = request.GET.get("playlist_id")
+    try:
+        playlist = Playlist.objects.get(id=target)     # playlist selected from frontend
+    except Playlist.DoesNotExist:
+        return HttpResponse(code=422, content="No such playlist with id " + target)
+
+    try:
+        song = Musicdata.objects.get(track_id=new_song)    # song selected from frontend
+    except Musicdata.DoesNotExist:
+        return HttpResponse(code=422, content="No such track with id " + new_song)
+
+    playlist.songs.add(song.track_id)
     playlist.save()
-    return render(request, 'base/home.html', {})
+    return HttpResponse(code=201)
 
 #-----------------------------------------------------------------------------------------#
 def remove_from_playlist(request: WSGIRequest):
-    playlist = Playlist.objects.all().filter(id='l31s-q8jo-e4r9-lc8t')[0]     # playlist selected from frontend
-    song = Musicdata.objects.all().filter(track_id='6f807x0ima9a1j3VPbc7VN')[0]    # song selected from frontend
-    playlist.songs.remove(song.pk)
+    new_song = request.GET.get("song_id")
+    target = request.GET.get("playlist_id")
+    try:
+        playlist = Playlist.objects.get(id=target)     # playlist selected from frontend
+    except Playlist.DoesNotExist:
+        return HttpResponse(code=422, content="No such playlist with id " + target)
+
+    try:
+        song = playlist.songs.get(track_id=new_song)    # song selected from frontend
+    except Playlist.DoesNotExist:
+        return HttpResponse(code=422, content="No such track with id " + new_song)
+
+    playlist.songs.remove(song.track_id)
     playlist.save()
-    return render(request, 'base/home.html', {})
+    return HttpResponse(code=201)
 
 #-----------------------------------------------------------------------------------------#
 def add_playlist_to_spotify(request: WSGIRequest):
-    playlist = Playlist.objects.all().filter(id='l31s-q8jo-e4r9-lc8t')[0]     # playlist selected from frontend
-    scope = [
-        'playlist-modify-private',      # "Create, edit, and follow private playlists"
-        'playlist-modify-public',       # "Create, edit, and follow playlists"
-    ]
-    auth_manager = SpotifyOAuth(scope=scope)
-    token_info = auth_manager.refresh_access_token(refresh_token = request.user.profile.token_info['refresh_token'])
-    sp = spotipy.Spotify(auth=token_info['access_token'])
+    user: MyUser = request.user
+    target = request.GET.get("playlist_id")
+    global auth_manager
+    try:
+        playlist = Playlist.objects.get(id=target)     # playlist selected from frontend
+    except Playlist.DoesNotExist:
+        return HttpResponse(code=422, content="No such playlist with id " + target)
+
+    songs: list = []
+    for song in playlist.songs:
+        songs.append(song.track_id)
+    sp = spotipy.Spotify(auth=get_access_token(user))
+    logmessage(msg=playlist.songs.values_list("track_id"))
     sp_playlist = sp.user_playlist_create(user=sp.current_user()['id'], name=playlist.name)
-    sp.playlist_add_items(playlist_id = sp_playlist['id'], items=playlist.songs)
-    return render(request, 'base/home.html', {})
+    sp.playlist_add_items(playlist_id = sp_playlist['id'], items=songs)
+    return HttpResponse(code=200)
 
 #-----------------------------------------------------------------------------------------#
 class UpdateUserView(generic.UpdateView):

@@ -48,11 +48,11 @@ class User(AbstractUser):
 
 
 class Playlist(models.Model):
-    id = models.CharField(max_length=120, primary_key=True)
+    id = models.AutoField(max_length=120, primary_key=True)
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     name = models.TextField(max_length=100)
     date_created = models.DateTimeField(default = timezone.now)
-    songs = models.JSONField(default=list)
+    songs = models.ManyToManyField(Musicdata)
 
     def __str__(self):
         return self.name

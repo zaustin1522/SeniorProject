@@ -46,7 +46,7 @@ def find_albums(artist, from_year = None, to_year = None):
 
 #-----------------------------------------------------------------------------------------#
 def find_track_by_name(track):
-    query = Musicdata.objects.filter(track_name__contains = track).values('track_id')
+    query = Musicdata.objects.filter(track_name__icontains = track).values('track_id')
     resp = list(query)
     # Randomize to get different results each time
     random.shuffle(resp)
@@ -60,7 +60,7 @@ def find_track_by_name(track):
 
 #-----------------------------------------------------------------------------------------#
 def find_album_by_name(album):
-    query = Musicdata.objects.filter(album_name__contains = album).values('album_id')
+    query = Musicdata.objects.filter(album_name__icontains = album).values('album_id')
     temp = list(query)
     resp = []
     [resp.append(album) for album in temp if album not in resp]
