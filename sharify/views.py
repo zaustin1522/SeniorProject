@@ -215,6 +215,8 @@ def recommend_songs(request: WSGIRequest):
     recommended_songs = []
     for track in spotipy_controller.recommendations(seed_artists=true_artist_seeds, seed_genres=true_genre_seeds, seed_tracks=true_track_seeds)['tracks']:
         recommended_songs.append(track['id'])
-    print(recommended_songs)
-    
-    return render(request, 'base/home.html', {})
+
+    context = {
+        'tracks': recommended_songs
+    }
+    return render(request, 'search/recommendations.html', context)
