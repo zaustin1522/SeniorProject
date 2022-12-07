@@ -1,0 +1,8 @@
+
+<select name="playlists" id="{{track_id}}" style="min-width: 100%; height: 24px;">
+    <option value="" disabled selected>Add to playlist</option>
+    {% for playlist in playlists %}
+        <option value="{{playlist.name}}">{{playlist.name}}</option>
+    {% endfor %}
+        <!--option value="create">Create a new playlist</option>-->
+</select>

@@ -1,21 +1,15 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Comment Box</title>
-    <link rel="stylesheet" href="static comment/comment.css">
-</head>
-<body>
-   
-    <input type="text" id="comment-box" placeholder="Enter comment">
-    <button id="post">Post</button>
-    <ul id="unordered">
-       
-   </ul>
-   
-    <script src= 'static comment/comment.js'></script>
-</body>
-</html>
+<center>
+    <h2>Comments</h2>
+</center>
+<div id="comments-on-{{track_id}}" style="display: flex; flex-direction: column-reverse; width: 100%; background-color:rgba(255, 255, 255, .75); border-radius: .5rem; color: black; flex: 1 1 auto; overflow-y: scroll;">
+    <input type="text" placeholder="Leave a comment" style="background-color:rgba(0,0,0,.5); color: white;" username="{{user.username}}" track-id="{{track_id}}" onkeypress="if (event.keyCode == 13) { commenting(this); };">
+    {% for comment in comments %}
+    <div title="{{comment.posted_at}}" style="flex-direction: row;  text-align: left; padding: 4px; background-color: rgba(0,0,0,.5); margin: 0 4px 4px; color: white; border-radius: .5rem;">
+        <div style="display: flex; flex-direction: row; justify-content: space-between;">
+            <h6 style="font-weight: bold; margin: 0 0 2px !important;">{{comment.user.username}}: </h6>
+            <h6 style="font-size: x-small; font-style: italic; margin: 0;" >{{comment.posted_at}}</h6>
+        </div>
+        <p style="margin: 0 0 0 8px !important;">{{comment.comment}}</p>
+    </div>
+    {% endfor %}
+</div>
