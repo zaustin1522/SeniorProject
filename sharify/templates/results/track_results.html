@@ -33,11 +33,15 @@
                     </select>
                     {% endif %}
                     <center><h2>Comments</h2></center>
-                    <div style="display: flex; flex-direction: column-reverse; width: 100%; background-color:rgba(255, 255, 255, .75); border-radius: .5rem; color: black; flex: 1 1 auto; overflow-y: scroll;">
-                        <input type="text" placeholder="Leave a comment" style="background-color:rgba(0,0,0,.5); color: white;" track-id="{{entry.0.track_id}}" onkeypress="if (event.keyCode == 13) { commenting(this); };">
+                    <div id="comments-on-{{entry.0.track_id}}" style="display: flex; flex-direction: column-reverse; width: 100%; background-color:rgba(255, 255, 255, .75); border-radius: .5rem; color: black; flex: 1 1 auto; overflow-y: scroll;">
+                        <input type="text" placeholder="Leave a comment" style="background-color:rgba(0,0,0,.5); color: white;" username="{{user.username}}" track-id="{{entry.0.track_id}}" onkeypress="if (event.keyCode == 13) { commenting(this); };">
                         {% for comment in entry.1 %}
-                        <div title="{{comment.posted_at}}" style="flex-direction: row;  text-align: left; padding-left: 4px; background-color: rgba(0,0,0,.5); margin: 0 4px 4px; color: white; border-radius: .5rem;">
-                            <h6 style="display: inline; font-weight: bold;">{{comment.user.username}}: </h6><p style="display: inline;">{{comment.comment}}</p>
+                        <div title="{{comment.posted_at}}" style="flex-direction: row;  text-align: left; padding: 4px; background-color: rgba(0,0,0,.5); margin: 0 4px 4px; color: white; border-radius: .5rem;">
+                            <div style="display: flex; flex-direction: row; justify-content: space-between;">
+                                <h6 style="font-weight: bold; margin: 0 0 2px !important;">{{comment.user.username}}: </h6>
+                                <h6 style="font-size: x-small; font-style: italic; margin: 0;" >{{comment.posted_at}}</h6>
+                            </div>
+                            <p style="margin: 0 0 0 8px !important;">{{comment.comment}}</p>
                         </div>
                         {% endfor %}
                     </div>
@@ -53,14 +57,24 @@
 
 {% block scripts %}
     <script>
+        let http = new XMLHttpRequest
+        var username = ""
+        var comment_text = ""
+        var target_id = ""
+
         function expand(elem) {
+            if (document.getElementById("active")){
+                shrink(document.getElementById("active"))
+            }
             target_id = elem.getAttribute("frame");
             target = document.getElementById(target_id);
             target.hidden = false;
             elem.style.setProperty("transform", "rotate(180deg)");
             elem.setAttribute("onclick", "shrink(this)");
+            elem.setAttribute("id", "active");
         }
         function shrink(elem) {
+            elem.removeAttribute("id");
             target_id = elem.getAttribute("frame");
             target = document.getElementById(target_id);
             target.hidden = true;
@@ -68,13 +82,32 @@
             elem.setAttribute("onclick", "expand(this)");
         }
         function commenting(elem) {
-            let http = new XMLHttpRequest;
             target_id = elem.getAttribute("track-id");
-            comment = encodeURIComponent(elem.value);
+            username = elem.getAttribute("username");
+            comment_text = elem.value;
+            comment = encodeURIComponent(comment_text);
             let url = '/comment/?track_id=' + target_id + "&comment=" + comment;
             http.open('GET', url);
             http.send(null);
-            elem.value = ""
+            elem.value = "";
         }
+
+        http.onload = () => {
+        console.log('DONE: ', http.status);
+        if (http.status == 201) {
+            var comment_box = document.getElementById("comments-on-" + target_id)
+            var new_comment = document.createElement("div");
+            new_comment.style = "flex-direction: row;  text-align: left; padding-left: 4px; background-color: rgba(0,0,0,.5); margin: 0 4px 4px; color: white; border-radius: .5rem;";
+            var user_node = document.createElement("h6");
+            user_node.style = "display: inline; font-weight: bold;";
+            user_node.innerHTML = username + ": ";
+            var comment_node = document.createElement("p");
+            comment_node.style = "display: inline;";
+            comment_node.innerHTML = comment_text;
+            new_comment.appendChild(user_node);
+            new_comment.appendChild(comment_node);
+            comment_box.insertBefore(new_comment, comment_box.children[1]);
+        }
+        };
     </script>
 {% endblock %}
