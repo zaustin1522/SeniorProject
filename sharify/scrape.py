@@ -42,7 +42,8 @@ def scrape_track(track: json):
         album_id  = track['album']['id'],
         album_name = track['album']['name'],
         album_release_date = int(str(track['album']['release_date'])[:4]),
-        duration_ms  = track['duration_ms']
+        duration_ms  = track['duration_ms'],
+        image_url = track['album']['images'][0]['url']
     )
     new_track.save()
     logmessage(type = "ADD TRACK", msg = str(new_track))
@@ -57,6 +58,29 @@ def scrape_album(album_id: str):
         if Musicdata.objects.filter(track_id=track['id']).count() == 0:
             track_ids.append(track['id'])
     tracks: json = spotipy_controller.tracks(tracks=track_ids)
-    logmessage(type = "ALBUM SCRAPE", msg = str(global_current_user) + " found some tracks to add!")
+    logmessage(type = "SCRAPE", msg = str(global_current_user) + " found some tracks to add!")
     for track in tracks['tracks']:
         scrape_track(track)
+
+#-----------------------------------------------------------------------------------------#
+def update_images(tracks: list):
+    if len(tracks) == 0:
+        return tracks
+
+    track_ids: list = []
+    for track in tracks:
+        track: Musicdata
+        track_ids.append(track.track_id)
+
+    track_json: json = spotipy_controller.tracks(tracks=track_ids)
+    image_set: dict = {}
+    for data in track_json['tracks']:
+        image_set[data['id']] = data['album']['images'][0]['url']
+    
+    for track in tracks:
+        if track.image_url == "":
+            track.image_url = image_set[track.track_id]
+            track.save()
+            logmessage(type="SCRAPE", msg="Updated the image for " + str(track))
+    return tracks
+

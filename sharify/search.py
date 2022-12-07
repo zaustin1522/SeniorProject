@@ -7,11 +7,11 @@
 #-----------------------------------------------------------------------------------------#
 
 
-import json
 import random
 
-from sharify.models import Musicdata
+from sharify.models import Comment, Musicdata
 from sharify.models import User as MyUser
+from sharify.scrape import update_images
 
 #-----------------------------------------------------------------------------------------#
 def find_albums(artist, from_year = None, to_year = None):
@@ -46,17 +46,22 @@ def find_albums(artist, from_year = None, to_year = None):
 
 #-----------------------------------------------------------------------------------------#
 def find_track_by_name(track):
-    query = Musicdata.objects.filter(track_name__icontains = track).values('track_id')
-    resp = list(query)
+    query = Musicdata.objects.filter(track_name__icontains = track)
+    resp = update_images(list(query)[:50])
+
     # Randomize to get different results each time
     random.shuffle(resp)
+    resp = resp[:12]
+
+    songs: list = []
+    for item in resp:
+        comments = list(Comment.objects.filter(comment_on_id = item).order_by('-posted_at'))
+        songs.append((item, comments))
+
     # Return the id of up to 12 songs
-    songs = [item['track_id'] for item in resp[:12]]
-    results = [songs[i:i+4] for i in range(0, len(songs), 4)]
-    return {
-	'results': results,
-    'type': "track"
-    }
+    results = [songs[i:i+2] for i in range(0, len(songs), 2)]
+    
+    return results
 
 #-----------------------------------------------------------------------------------------#
 def find_album_by_name(album):

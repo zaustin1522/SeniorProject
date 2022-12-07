@@ -4,7 +4,9 @@ from django.utils import timezone
 
 class Musicdata(models.Model):
     track_id = models.TextField(primary_key=True)
+    id = models.IntegerField(null=True, blank=True)
     track_name = models.TextField()
+    image_url = models.TextField(default="")
     artist = models.TextField()
     popularity  = models.FloatField()
     album_id  = models.TextField()
@@ -48,7 +50,7 @@ class User(AbstractUser):
 
 
 class Playlist(models.Model):
-    id = models.AutoField(max_length=120, primary_key=True)
+    id = models.AutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     name = models.TextField(max_length=100)
     date_created = models.DateTimeField(default = timezone.now)
@@ -60,12 +62,12 @@ class Playlist(models.Model):
 class Comment(models.Model):
     id = models.AutoField(primary_key=True)
     posted_at = models.DateTimeField(default = timezone.now)
-    comment_on = models.ForeignKey(Musicdata, on_delete = models.DO_NOTHING)
-    user = models.ForeignKey(User, on_delete = models.DO_NOTHING, default=7)
+    comment_on = models.ForeignKey(Musicdata, on_delete = models.DO_NOTHING, db_constraint=False)
+    user = models.ForeignKey(User, on_delete = models.DO_NOTHING)
     comment = models.TextField(default = "")
 
     class Meta: 
         ordering = ('comment_on', 'posted_at',) 
 
     def __str__(self): 
-        return '{}: {}'.format(self.user.username, self.comment)
+        return "{}: {}".format(self.user.username, self.comment)

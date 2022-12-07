@@ -23,7 +23,8 @@ urlpatterns = [
     path('edit_profile/', views.UpdateUserView.as_view(), name='edit_profile'),
     path('add_friend/', views.add_friend, name='add_friend'),
     path('remove_friend/', views.remove_friend, name='remove_friend'),
-    path('test_function', views.add_playlist_to_spotify, name='test_function')
+    path('test_function', views.add_playlist_to_spotify, name='test_function'),
+    path('track/', views.show_track, name='show_track')
 ]
 
 #-----------------------------------------------------------------------------------------#

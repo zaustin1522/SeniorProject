@@ -38,7 +38,7 @@
         </a>
         {% endif %}
     </div>
-    <div class="col-md-8 text-white" style="margin: auto auto auto 2.5vw; padding: 12px; width: max(25vw, 450px); height: min-content; border-radius: .5rem; background: linear-gradient(to left bottom, rgb(142, 155, 224), rgb(16, 13, 160));">
+    <div class="col-md-8 text-white" style="margin: auto auto auto 2.5vw; padding: 24px; width: max(30vw, 500px); height: min-content; border-radius: .5rem; background: linear-gradient(to left bottom, rgb(142, 155, 224), rgb(16, 13, 160));">
         <h6 style="font-size: max(16px, .95vw);">
             Information
         </h6>
@@ -92,7 +92,7 @@
     </div>
 </div>
 <div class="row g-0" style="margin: 2.5vw auto 0; min-height: 100%; min-width: 785px;">
-    <div class="col-md-8 text-center" style="margin: auto 2.5vw auto auto; padding: 12px; width: max(25vw, 450px); aspect-ratio: 1/1; border-radius: .5rem; background: linear-gradient(to left top, rgb(142, 155, 224), rgb(16, 13, 160));">
+    <div class="col-md-8 text-center" style="margin: auto 2.5vw auto auto; padding: 12px; width: max(30vw, 500px); aspect-ratio: 1/1; border-radius: .5rem; background: linear-gradient(to left top, rgb(142, 155, 224), rgb(16, 13, 160));">
     {% if user.is_authenticated and user.username == current_user.username or current_user.playlists_are_public %}
         {% if playlists %}
             {% for playlist in playlists %}
