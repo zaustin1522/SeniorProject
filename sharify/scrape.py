@@ -22,19 +22,23 @@ def scrape_playlist(items: json):
 
 #-----------------------------------------------------------------------------------------#
 def scrape_track(track: json):
-    num_artists: int = len(track['artists'])
+    if 'album' in track:
+        artist_list: list = track['album']['artists']
+    else:
+        artist_list: list = track['artists']
+    num_artists: int = len(artist_list)
     track['available_markets'] = ""
     artist_string: str = ""
     if num_artists == 1:
-        artist_string = track['artists'][0]['name']
+        artist_string = artist_list[0]['name']
     elif num_artists == 2:
-        artist_string = track['artists'][0]['name'] + " & " + track['artists'][1]['name']
+        artist_string = artist_list[0]['name'] + " & " + artist_list[1]['name']
     else:
         for artist_number in range (num_artists - 1):
-            artist_string = artist_string + track['artists'][artist_number]['name'] + ", "
-        artist_string = artist_string + "& " + track['artists'][num_artists - 1]['name']
+            artist_string = artist_string + artist_list[artist_number]['name'] + ", "
+        artist_string = artist_string + "& " + artist_list[num_artists - 1]['name']
         
-    new_track = Musicdata.objects.create(
+    new_track: Musicdata = Musicdata.objects.create(
         track_id = track['id'],
         track_name = track['name'],
         artist = artist_string,
@@ -45,22 +49,21 @@ def scrape_track(track: json):
         duration_ms  = track['duration_ms'],
         image_url = track['album']['images'][0]['url']
     )
-    new_track.save()
     logmessage(type = "ADD TRACK", msg = str(new_track))
 
 #-----------------------------------------------------------------------------------------#
 def scrape_album(album_id: str):
-    global global_current_user
     album: json = spotipy_controller.album_tracks(album_id = album_id)
     track_ids: list = []
     track: json
     for track in album['items']:
         if Musicdata.objects.filter(track_id=track['id']).count() == 0:
             track_ids.append(track['id'])
-    tracks: json = spotipy_controller.tracks(tracks=track_ids)
-    logmessage(type = "SCRAPE", msg = str(global_current_user) + " found some tracks to add!")
-    for track in tracks['tracks']:
-        scrape_track(track)
+    if len(track_ids) > 0:
+        tracks: json = spotipy_controller.tracks(tracks=track_ids)
+        logmessage(type = "SCRAPE", msg = "Found some tracks to add!")
+        for track in tracks['tracks']:
+            scrape_track(track)
 
 #-----------------------------------------------------------------------------------------#
 def update_images(tracks: list):

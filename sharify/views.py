@@ -106,7 +106,7 @@ def get_track(request: WSGIRequest):
         else:
             tracks = {}
             if track != "":
-                tracks = find_track_by_name(track)
+                tracks = find_track_by_name(track, request.user)
             if not request.user.is_authenticated:
                 return render(request, "results/track_results.html", {"results": tracks})
             else:

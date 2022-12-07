@@ -7,11 +7,15 @@
 #-----------------------------------------------------------------------------------------#
 
 
+import json
 import random
+from urllib.parse import quote
+import requests
+from sharify.auth import get_access_token
 
 from sharify.models import Comment, Musicdata
 from sharify.models import User as MyUser
-from sharify.scrape import update_images
+from sharify.scrape import scrape_album, scrape_track, update_images
 
 #-----------------------------------------------------------------------------------------#
 def find_albums(artist, from_year = None, to_year = None):
@@ -45,13 +49,21 @@ def find_albums(artist, from_year = None, to_year = None):
     return results
 
 #-----------------------------------------------------------------------------------------#
-def find_track_by_name(track):
+def find_track_by_name(track: str, user: MyUser):
     query = Musicdata.objects.filter(track_name__icontains = track)
     resp = update_images(list(query)[:50])
 
     # Randomize to get different results each time
     random.shuffle(resp)
     resp = resp[:12]
+
+    if len(resp) < 12:
+        if pull_more_tracks(track, 12-len(resp), user):
+            query = Musicdata.objects.filter(track_name__icontains = track)
+            resp = update_images(list(query)[:50])
+            # Randomize to get different results each time
+            random.shuffle(resp)
+            resp = resp[:12]
 
     songs: list = []
     for item in resp:
@@ -62,6 +74,31 @@ def find_track_by_name(track):
     results = [songs[i:i+2] for i in range(0, len(songs), 2)]
     
     return results
+
+#-----------------------------------------------------------------------------------------#
+def pull_more_tracks(query: str, minimum: int, user: MyUser):
+    headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + get_access_token(user),
+    }
+
+    params = {
+        'q': quote(query),
+        'type': 'track',
+        'market': 'ES',
+        'limit': 24,
+    }
+
+    response = requests.get('https://api.spotify.com/v1/search', params=params, headers=headers)
+
+    if response.status_code != 200:
+        return False
+    else:
+        track_json: json = json.loads(response.content)
+        for track in track_json['tracks']['items']:
+            scrape_track(track)
+        return True
 
 #-----------------------------------------------------------------------------------------#
 def find_album_by_name(album):
