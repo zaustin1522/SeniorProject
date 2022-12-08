@@ -1,8 +1,8 @@
 <center>
     <h2>Comments</h2>
 </center>
-<div id="comments-on-{{track_id}}" style="display: flex; flex-direction: column-reverse; width: 100%; background-color:rgba(255, 255, 255, .75); border-radius: .5rem; color: black; flex: 1 1 auto; overflow-y: scroll;">
-    <input type="text" placeholder="Leave a comment" style="background-color:rgba(0,0,0,.5); color: white;" username="{{user.username}}" track-id="{{track_id}}" onkeypress="if (event.keyCode == 13) { commenting(this); };">
+<div id="comments-on-{{content_id}}" style="display: flex; flex-direction: column-reverse; width: 100%; background-color:rgba(255, 255, 255, .75); border-radius: .5rem; color: black; flex: 1 1 auto; overflow-y: scroll;">
+    <input type="text" placeholder="Leave a comment" style="background-color:rgba(0,0,0,.5); color: white;" username="{{user.username}}" content-type="{{content_type}}" content-id="{{content_id}}" onkeypress="if (event.keyCode == 13) { commenting(this); };">
     {% for comment in comments %}
     <div title="{{comment.posted_at}}" style="flex-direction: row;  text-align: left; padding: 4px; background-color: rgba(0,0,0,.5); margin: 0 4px 4px; color: white; border-radius: .5rem;">
         <div style="display: flex; flex-direction: row; justify-content: space-between;">
@@ -13,3 +13,41 @@
     </div>
     {% endfor %}
 </div>
+
+{% block scripts %}
+<script>
+    let http = new XMLHttpRequest
+    var username = ""
+    var comment_text = ""
+    var target_id = ""
+    function commenting(elem) {
+        contentType = elem.getAttribute("content-type");
+        target_id = elem.getAttribute("content-id");
+        username = elem.getAttribute("username");
+        comment_text = elem.value;
+        comment = encodeURIComponent(comment_text);
+        let url = '/comment/?id=' + target_id + "&type=" + contentType + "&comment=" + comment;
+        http.open('GET', url);
+        http.send(null);
+        elem.value = "";
+    }
+
+    http.onload = () => {
+        console.log('DONE: ', http.status);
+        if (http.status == 201) {
+            var comment_box = document.getElementById("comments-on-" + target_id)
+            var new_comment = document.createElement("div");
+            new_comment.style = "flex-direction: row;  text-align: left; padding-left: 4px; background-color: rgba(0,0,0,.5); margin: 0 4px 4px; color: white; border-radius: .5rem;";
+            var user_node = document.createElement("h6");
+            user_node.style = "display: inline; font-weight: bold;";
+            user_node.innerHTML = username + ": ";
+            var comment_node = document.createElement("p");
+            comment_node.style = "display: inline;";
+            comment_node.innerHTML = comment_text;
+            new_comment.appendChild(user_node);
+            new_comment.appendChild(comment_node);
+            comment_box.insertBefore(new_comment, comment_box.children[1]);
+        }
+    };
+</script>
+{% endblock %}

@@ -13,6 +13,7 @@ class Musicdata(models.Model):
     album_name = models.TextField()
     album_release_date = models.IntegerField()
     duration_ms  = models.IntegerField()
+    album_liason = models.BooleanField(default=False)
 
     def __str__(self):
         return "\"" + self.track_name + "\" by " + self.artist
@@ -63,6 +64,7 @@ class Comment(models.Model):
     id = models.AutoField(primary_key=True)
     posted_at = models.DateTimeField(default = timezone.now)
     comment_on = models.ForeignKey(Musicdata, on_delete = models.DO_NOTHING, db_constraint=False)
+    on_type = models.TextField(default="track", blank=False, null=False)
     user = models.ForeignKey(User, on_delete = models.DO_NOTHING)
     comment = models.TextField(default = "")
 

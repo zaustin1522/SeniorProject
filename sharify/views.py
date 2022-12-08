@@ -94,8 +94,8 @@ def get_album(request: WSGIRequest):
         else:
             albums = {}
             if album != "":
-                albums = find_album_by_name(album)
-            return render(request, "results/results.html", albums)
+                albums = find_album_by_name(album, request.user)
+            return render(request, "results/album_results.html", {'results': albums})
 
 #-----------------------------------------------------------------------------------------#
 def get_track(request: WSGIRequest):
@@ -163,10 +163,17 @@ def show_track(request: WSGIRequest):
 
 #-----------------------------------------------------------------------------------------#
 def comment(request: WSGIRequest):
-    comment_on: Musicdata = Musicdata.objects.get(track_id = request.GET.get('track_id'))
+    on_type: str = request.GET.get('type')
+    if on_type == "album":
+        try:
+            comment_on: Musicdata = Musicdata.objects.filter(album_id = request.GET.get('id')).get(album_liason = True)
+        except Musicdata.DoesNotExist:
+            return HttpResponse(status=400)
+    else:
+        comment_on: Musicdata = Musicdata.objects.get(track_id = request.GET.get('id'))
     user: MyUser = MyUser.objects.get(id=request.user.id)
     comment: str = request.GET.get('comment')
-    Comment.objects.create(comment_on=comment_on, user=user, comment=comment)
+    Comment.objects.create(comment_on=comment_on, on_type= on_type, user=user, comment=comment)
     return HttpResponse(status=201)
 
 #-----------------------------------------------------------------------------------------#

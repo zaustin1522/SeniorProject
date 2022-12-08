@@ -1,0 +1,17 @@
+{% if not user.is_authenticated %}
+    <div id="{{track.track_id}}" style="position: absolute; z-index: 10; right: -120px; top: 100px; border: 5px solid white; border-radius: 1.1rem; max-width: 310px; height: 362px; background-color: white;" hidden="true">
+        <iframe src="https://open.spotify.com/embed/track/{{ track.track_id }}" width="310" height="362" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
+    </div>
+{% else %}
+    <div id="{{track.track_id}}" style="display: flex; flex-direction: row; position: absolute; z-index: 10; right: -70px; top: 100px; border: 5px solid white; border-radius: 1.1rem; min-width: 640px; max-width: 640px; height: 362px; background-color: white;" hidden="true">
+        <iframe style="max-width: 310px;" src="https://open.spotify.com/embed/track/{{ track.track_id }}" width="310" height="362" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
+        <div style="display: flex; flex-direction: column; margin-left: 5px; padding: 12px; min-width: 325px; max-width: 325px; border-radius: .75rem; background-color: rgba(0, 0, 0, .75); color: white;">
+            {% if playlists %}
+                {% include 'social/playlist_selector.html' %}
+            {% endif %}
+            {% with content_type='track' content_id=track.track_id %}
+                {% include 'social/comment.html' %}
+            {% endwith %}
+        </div>
+    </div>
+{% endif %}

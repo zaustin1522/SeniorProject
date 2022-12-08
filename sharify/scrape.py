@@ -14,11 +14,9 @@ from sharify.models import Musicdata
 
 #-----------------------------------------------------------------------------------------#
 def scrape_playlist(items: json):
-    global global_current_user
     for item in items:
         if item['track'] is not None and Musicdata.objects.filter(track_id = item['track']['id']).count() == 0:
-            global_current_user = MyUser.objects.get(id=7)
-            scrape_track(item['track'])
+            scrape_album(item['track']['album']['id'])
 
 #-----------------------------------------------------------------------------------------#
 def scrape_track(track: json):
@@ -57,13 +55,25 @@ def scrape_album(album_id: str):
     track_ids: list = []
     track: json
     for track in album['items']:
-        if Musicdata.objects.filter(track_id=track['id']).count() == 0:
+        try:
+            Musicdata.objects.get(track_id=track['id'])
+        except Musicdata.DoesNotExist:
             track_ids.append(track['id'])
     if len(track_ids) > 0:
         tracks: json = spotipy_controller.tracks(tracks=track_ids)
         logmessage(type = "SCRAPE", msg = "Found some tracks to add!")
         for track in tracks['tracks']:
             scrape_track(track)
+    album_liason_service(album_id)
+
+#-----------------------------------------------------------------------------------------#
+def album_liason_service(album_id: str):
+    query = Musicdata.objects.filter(album_id = album_id)
+    if query.filter(album_liason = True).count() == 0:
+        the_one: Musicdata = query.first()
+        the_one.album_liason = True
+        the_one.save()
+    return
 
 #-----------------------------------------------------------------------------------------#
 def update_images(tracks: list):
