@@ -67,7 +67,7 @@ class Comment(models.Model):
     comment = models.TextField(default = "")
 
     class Meta: 
-        ordering = ('comment_on', 'posted_at',) 
+        ordering = ('comment_on', '-posted_at',) 
 
     def __str__(self): 
         return "{}: {}".format(self.user.username, self.comment)

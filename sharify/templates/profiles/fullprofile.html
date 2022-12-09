@@ -103,12 +103,16 @@
             </select>
             <div style="max-height: 90%; overflow: auto; border-radius: 1.25rem;">
                 {% for playlist in current_user.playlist_set.all %}
-                    <table id="table-{{playlist.id}}" style="width: 500px; max-width: 500px;" hidden="true">
-                        {% for track in playlist.songs.all %}
-                            <tr id="{{playlist.id}}-{{track.id}}" style="width: 500px; text-align: left; max-width: 500px;">
-                                {% include 'items/mini_track.html' %}
-                            </tr>
-                        {% endfor %}
+                    <table id="table-{{playlist.id}}" style="display: flex; flex: 1 1 auto; width: 500px; max-width: 500px; min-height: 484px;" hidden="true">
+                        <tbody style="min-height: 100%;">
+                            {% for track in playlist.songs.all %}
+                                {% with comments=track.comment_set.all %}
+                                    <tr id="{{playlist.id}}-{{track.id}}" style="width: 500px; text-align: left; max-width: 500px; min-height: 100%;">
+                                        {% include 'items/mini_track.html' %}
+                                    </tr>
+                                {% endwith %}
+                            {% endfor %}
+                        </tbody>
                     </table>
                 {% empty %}
                     <p style="color: white; padding-top: 46%; margin: auto;">{{ current_user }} has no playlists!</p>
@@ -130,12 +134,17 @@
 
 {% block scripts %}
     <script>
+        let commentHttp = new XMLHttpRequest;
+		var comment_username = ""
+		var comment_text = ""
+		var comment_target_id = ""
+
         function expand(elem) {
             if (document.getElementById("active")){
                 shrink(document.getElementById("active"))
             }
             target_id = elem.getAttribute("frame");
-            target = document.getElementById(target_id);
+            target = document.getElementById("frame-" + target_id);
             target.hidden = false;
             elem.style.setProperty("transform", "rotate(180deg)");
             elem.setAttribute("onclick", "shrink(this)");
@@ -144,7 +153,7 @@
         function shrink(elem) {
             elem.removeAttribute("id");
             target_id = elem.getAttribute("frame");
-            target = document.getElementById(target_id);
+            target = document.getElementById("frame-" + target_id);
             target.hidden = true;
             elem.style.setProperty("transform", "rotate(0deg)");
             elem.setAttribute("onclick", "expand(this)");
@@ -164,16 +173,29 @@
             playlist.hidden = false
         }
 
-        playlistHttp.onload = () => {
-            console.log('DONE: ', playlistHttp.status);
-            alert(playlistHttp.response);
-            if (playlistHttp.status == 200) {
-                target = document.getElementById(playlist_track_id + "-" + playlist_target_id);
-                target_reset = document.getElementById(playlist_track_id + "-reset");
-                target_reset.selected = 'selected';
-
-                target.remove()
+        commentHttp.onload = () => {
+            console.log('DONE: ', commentHttp.status);
+            if (commentHttp.status == 201) {
+                var comment_box = document.getElementById("comments-on-" + comment_target_id)
+                var new_comment = document.createElement("div");
+                new_comment.style = "flex-direction: row;  text-align: left; padding: 4px; background-color: rgba(0,0,0,.5); margin: 0 4px 4px; color: white; border-radius: .5rem;";
+                var new_wrapper = document.createElement("div");
+                new_wrapper.style = "display: flex; flex-direction: row; justify-content: space-between;";
+                var user_node = document.createElement("h6");
+                user_node.style = "font-weight: bold; margin: 0 0 2px !important;";
+                user_node.innerHTML = comment_username + ": ";
+                var time_node = document.createElement("h6");
+                time_node.style = "font-size: x-small; font-style: italic; margin: 0;";
+                time_node.innerHTML = "Just now";
+                var comment_node = document.createElement("p");
+                comment_node.style = "margin: 0 0 0 8px !important;";
+                comment_node.innerHTML = comment_text;
+                new_wrapper.appendChild(user_node);
+                new_wrapper.appendChild(time_node);
+                new_comment.appendChild(new_wrapper);
+                new_comment.appendChild(comment_node);
+                comment_box.insertBefore(new_comment, comment_box.children[1]);
             }
-        }
+        };
     </script>
 {% endblock %}

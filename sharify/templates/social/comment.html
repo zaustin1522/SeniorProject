@@ -33,14 +33,21 @@
         if (commentHttp.status == 201) {
             var comment_box = document.getElementById("comments-on-" + comment_target_id)
             var new_comment = document.createElement("div");
-            new_comment.style = "flex-direction: row;  text-align: left; padding-left: 4px; background-color: rgba(0,0,0,.5); margin: 0 4px 4px; color: white; border-radius: .5rem;";
+            new_comment.style = "flex-direction: row;  text-align: left; padding: 4px; background-color: rgba(0,0,0,.5); margin: 0 4px 4px; color: white; border-radius: .5rem;";
+            var new_wrapper = document.createElement("div");
+            new_wrapper.style = "display: flex; flex-direction: row; justify-content: space-between;";
             var user_node = document.createElement("h6");
-            user_node.style = "display: inline; font-weight: bold;";
+            user_node.style = "font-weight: bold; margin: 0 0 2px !important;";
             user_node.innerHTML = comment_username + ": ";
+            var time_node = document.createElement("h6");
+            time_node.style = "font-size: x-small; font-style: italic; margin: 0;";
+            time_node.innerHTML = "Just now";
             var comment_node = document.createElement("p");
-            comment_node.style = "display: inline;";
+            comment_node.style = "margin: 0 0 0 8px !important;";
             comment_node.innerHTML = comment_text;
-            new_comment.appendChild(user_node);
+            new_wrapper.appendChild(user_node);
+            new_wrapper.appendChild(time_node);
+            new_comment.appendChild(new_wrapper);
             new_comment.appendChild(comment_node);
             comment_box.insertBefore(new_comment, comment_box.children[1]);
         }
