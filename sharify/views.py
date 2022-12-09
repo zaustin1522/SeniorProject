@@ -197,12 +197,29 @@ def playlist_search_by_name(request: WSGIRequest,):
 def make_playlist(request: WSGIRequest):
     name = request.GET.get("playlist_name")
     user: MyUser = request.user
+    Playlist.objects.create(
+            user = user,
+            name = name
+        )
+    return HttpResponse(status=201)
+
+#-----------------------------------------------------------------------------------------#
+def make_playlist_with_track(request: WSGIRequest):
+    name = request.GET.get("playlist_name")
+    track_id = request.GET.get("track_id")
+    print(request.body)
+    try:
+        track = Musicdata.objects.get(track_id = track_id)
+    except Musicdata.DoesNotExist:
+        return HttpResponse(status=400)
+    
+    user: MyUser = request.user
     playlist = Playlist.objects.create(
             user = user,
             name = name
         )
-    playlist.save()
-    return HttpResponse(status=201)
+    playlist.songs.add(track)
+    return HttpResponse(status=201, content="Successfully made playlist \"" + name + "\" containing the song " + str(track) + "\nPlease refresh the page or make another search to add songs to the playlist.")
 
 #-----------------------------------------------------------------------------------------#
 def delete_playlist(request: WSGIRequest):
@@ -217,7 +234,7 @@ def delete_playlist(request: WSGIRequest):
 
 #-----------------------------------------------------------------------------------------#
 def add_to_playlist(request: WSGIRequest):
-    new_song = request.GET.get("song_id")
+    new_song = request.GET.get("track_id")
     target = request.GET.get("playlist_id")
     try:
         playlist = Playlist.objects.get(id=target)     # playlist selected from frontend
@@ -229,9 +246,13 @@ def add_to_playlist(request: WSGIRequest):
     except Musicdata.DoesNotExist:
         return HttpResponse(status=422, content="No such track with id " + new_song)
 
+    playlist_songs = list(playlist.songs.values('track_id'))
+    playlist_songs = list(playlist_songs[0].values())
+    if song in playlist_songs:
+        return HttpResponse(status=406, content=str(song) + " is already in playlist \"" + playlist.name + "\"")
     playlist.songs.add(song.track_id)
     playlist.save()
-    return HttpResponse(status=201)
+    return HttpResponse(status=200, content="Successfully added " + str(song) + " to playlist \"" + playlist.name + "\"")
 
 #-----------------------------------------------------------------------------------------#
 def remove_from_playlist(request: WSGIRequest):

@@ -91,16 +91,30 @@
         </div>
     </div>
 </div>
-<div class="row g-0" style="margin: 2.5vw auto 0; min-height: 100%; min-width: 785px;">
-    <div class="col-md-8 text-center" style="margin: auto 2.5vw auto auto; padding: 12px; width: max(30vw, 500px); aspect-ratio: 1/1; border-radius: .5rem; background: linear-gradient(to left top, rgb(142, 155, 224), rgb(16, 13, 160));">
+<div class="row g-0" style="margin: 2.5vw auto 0; min-height: 100%; min-width: 1000px;">
+    <div class="col-md-8 text-center" style="margin: auto 2.5vw auto auto; padding: 12px; width: max(30vw, 534px); aspect-ratio: 1/1; border-radius: .5rem; background: linear-gradient(to left top, rgb(142, 155, 224), rgb(16, 13, 160));">
     {% if user.is_authenticated and user.username == current_user.username or current_user.playlists_are_public %}
-        {% if playlists %}
-            {% for playlist in playlists %}
-                {{ playlist }}
-            {% endfor %}
-        {% else %}
-            <p style="color: white; padding-top: 46%; margin: auto;">{{ current_user }} has no playlists!</p>
-        {% endif %}
+        {% with nested=True %}
+            <select name="playlists" id="{{track.track_id}}" style="min-width: 100%; margin-top: 5px; height: 24px;" onchange="view_playlist(this)">
+                <option id="reset" value="reset" disabled selected>View Playlist</option>
+                {% for playlist in user.playlist_set.all %}
+                <option id="select-{{playlist.id}}" playlist-id="{{playlist.id}}" value="{{playlist.name}}">{{playlist.name}}</option>
+                {% endfor %}
+            </select>
+            <div style="max-height: 90%; overflow: auto; border-radius: 1.25rem;">
+                {% for playlist in current_user.playlist_set.all %}
+                    <table id="table-{{playlist.id}}" style="width: 500px; max-width: 500px;" hidden="true">
+                        {% for track in playlist.songs.all %}
+                            <tr id="{{playlist.id}}-{{track.id}}" style="width: 500px; text-align: left; max-width: 500px;">
+                                {% include 'items/mini_track.html' %}
+                            </tr>
+                        {% endfor %}
+                    </table>
+                {% empty %}
+                    <p style="color: white; padding-top: 46%; margin: auto;">{{ current_user }} has no playlists!</p>
+                {% endfor %}
+            </div>
+        {% endwith %}
     {% else %}
         <p style="color: white; padding-top: 46%; margin: auto;"> {{ current_user.username }}'s playlists are private! </p>
     {% endif %}
@@ -113,3 +127,53 @@
     {% endif %}
     </div>
 </div>
+
+{% block scripts %}
+    <script>
+        function expand(elem) {
+            if (document.getElementById("active")){
+                shrink(document.getElementById("active"))
+            }
+            target_id = elem.getAttribute("frame");
+            target = document.getElementById(target_id);
+            target.hidden = false;
+            elem.style.setProperty("transform", "rotate(180deg)");
+            elem.setAttribute("onclick", "shrink(this)");
+            elem.setAttribute("id", "active");
+        }
+        function shrink(elem) {
+            elem.removeAttribute("id");
+            target_id = elem.getAttribute("frame");
+            target = document.getElementById(target_id);
+            target.hidden = true;
+            elem.style.setProperty("transform", "rotate(0deg)");
+            elem.setAttribute("onclick", "expand(this)");
+        }
+        function view_playlist(elem) {
+            options = Array.from(elem.options).map(e => e.value);
+            for (var playlist_target_id of Array.from(elem.options).map(e => e.getAttribute("playlist-id"))) {
+                if (playlist_target_id == null) {
+                    continue;
+                }
+                playlist = document.getElementById("table-" + playlist_target_id);
+                playlist.hidden = true;
+            }
+            playlist_option = elem.options[elem.selectedIndex];
+            playlist_target_id = playlist_option.getAttribute("playlist-id")
+            playlist = document.getElementById("table-" + playlist_target_id)
+            playlist.hidden = false
+        }
+
+        playlistHttp.onload = () => {
+            console.log('DONE: ', playlistHttp.status);
+            alert(playlistHttp.response);
+            if (playlistHttp.status == 200) {
+                target = document.getElementById(playlist_track_id + "-" + playlist_target_id);
+                target_reset = document.getElementById(playlist_track_id + "-reset");
+                target_reset.selected = 'selected';
+
+                target.remove()
+            }
+        }
+    </script>
+{% endblock %}

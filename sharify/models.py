@@ -4,7 +4,6 @@ from django.utils import timezone
 
 class Musicdata(models.Model):
     track_id = models.TextField(primary_key=True)
-    id = models.IntegerField(null=True, blank=True)
     track_name = models.TextField()
     image_url = models.TextField(default="")
     artist = models.TextField()
@@ -51,7 +50,6 @@ class User(AbstractUser):
 
 
 class Playlist(models.Model):
-    id = models.AutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     name = models.TextField(max_length=100)
     date_created = models.DateTimeField(default = timezone.now)

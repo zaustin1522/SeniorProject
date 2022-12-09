@@ -24,7 +24,9 @@ urlpatterns = [
     path('add_friend/', views.add_friend, name='add_friend'),
     path('remove_friend/', views.remove_friend, name='remove_friend'),
     path('test_function', views.add_playlist_to_spotify, name='test_function'),
-    path('track/', views.show_track, name='show_track')
+    path('track/', views.show_track, name='show_track'),
+    path('create_playlist/', views.make_playlist_with_track, name='create_nonempty_playlist'),
+    path('add_to_playlist/', views.add_to_playlist, name='create_nonempty_playlist'),
 ]
 
 #-----------------------------------------------------------------------------------------#
