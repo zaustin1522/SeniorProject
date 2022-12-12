@@ -112,8 +112,8 @@ def unlink_spotify(request: WSGIRequest):
             profile = current_user.profile
             spotify_id = profile.spotify_id
             current_user.profile = None
-            profile.delete()
             current_user.save()
+            profile.delete()
             logmessage(type="UNLINKED", msg=current_user.username+" disconnected Spotify ID "+spotify_id)
         return redirect('/userprofile/')
     return redirect('/')
