@@ -105,6 +105,19 @@
                 {% for playlist in current_user.playlist_set.all %}
                     <table id="table-{{playlist.id}}" style="display: flex; flex: 1 1 auto; width: 500px; max-width: 500px; min-height: 484px;" hidden="true">
                         <tbody style="min-height: 100%;">
+                            {% if user.is_authenticated and current_user.username == user.username %}
+                                <tr>
+                                    <td>
+                                        <a href="/manage_playlist/?playlist_id={{playlist.id}}">
+                                            <div style="margin: 0 auto; max-width: 500px; width: 100%; color: white; border-radius: 1.25rem; background-color: rgba(255, 255, 255, .25); padding: 5px;">
+                                                <center>
+                                                    <h1 style="margin: 0px;">Manage Playlist</h1>
+                                                </center>
+                                            </div>
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endif %}
                             {% for track in playlist.songs.all %}
                                 {% with comments=track.comment_set.all %}
                                     <tr id="{{playlist.id}}-{{track.id}}" style="width: 500px; text-align: left; max-width: 500px; min-height: 100%;">

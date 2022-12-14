@@ -224,13 +224,17 @@ def make_playlist_with_track(request: WSGIRequest):
 #-----------------------------------------------------------------------------------------#
 def delete_playlist(request: WSGIRequest):
     target = request.GET.get("deleting_id")
+    return delete_playlist_by_id(target)
+
+#-----------------------------------------------------------------------------------------#
+def delete_playlist_by_id(target: str):
     try:
         playlist = Playlist.objects.get(id=target)     # grab id from frontend
     except Playlist.DoesNotExist:
         return HttpResponse(status=422, content="No such playlist with id " + target)
 
     playlist.delete()
-    return HttpResponse(status=200)
+    return HttpResponse(status=205)
 
 #-----------------------------------------------------------------------------------------#
 def add_to_playlist(request: WSGIRequest):
@@ -256,7 +260,7 @@ def add_to_playlist(request: WSGIRequest):
 
 #-----------------------------------------------------------------------------------------#
 def remove_from_playlist(request: WSGIRequest):
-    new_song = request.GET.get("song_id")
+    to_delete = request.GET.get("track_id")
     target = request.GET.get("playlist_id")
     try:
         playlist = Playlist.objects.get(id=target)     # playlist selected from frontend
@@ -264,13 +268,28 @@ def remove_from_playlist(request: WSGIRequest):
         return HttpResponse(status=422, content="No such playlist with id " + target)
 
     try:
-        song = playlist.songs.get(track_id=new_song)    # song selected from frontend
-    except Playlist.DoesNotExist:
-        return HttpResponse(status=422, content="No such track with id " + new_song)
+        song: Musicdata = playlist.songs.get(track_id=to_delete)    # song selected from frontend
+    except Musicdata.DoesNotExist:
+        return HttpResponse(status=422, content="No such track with id " + to_delete)
 
-    playlist.songs.remove(song.track_id)
+    playlist.songs.remove(song)
     playlist.save()
-    return HttpResponse(status=201)
+    if playlist.songs.count() == 0:
+        delete_playlist_by_id(target)
+    return HttpResponse(status=200)
+
+#-----------------------------------------------------------------------------------------#
+def rename_playlist(request: WSGIRequest):
+    new_name = request.GET.get("new_name")
+    target = request.GET.get("playlist_id")
+    try:
+        playlist = Playlist.objects.get(id=target)     # playlist selected from frontend
+    except Playlist.DoesNotExist:
+        return HttpResponse(status=422, content="No such playlist with id " + target)
+
+    playlist.name = new_name
+    playlist.save()
+    return HttpResponse(status=202)
 
 #-----------------------------------------------------------------------------------------#
 def add_playlist_to_spotify(request: WSGIRequest):
@@ -290,6 +309,31 @@ def add_playlist_to_spotify(request: WSGIRequest):
     sp_playlist = sp.user_playlist_create(user=sp.current_user()['id'], name=playlist.name)
     sp.playlist_add_items(playlist_id = sp_playlist['id'], items=songs)
     return HttpResponse(status=200)
+
+#-----------------------------------------------------------------------------------------#
+def manage_playlist(request: WSGIRequest):
+    if not request.user.is_authenticated:
+        logmessage(msg="user isn't logged in!")
+        return render(request, 'base/home.html')
+
+    user: MyUser = request.user
+    playlist_id = request.GET.get("playlist_id")
+    if playlist_id is None:
+        logmessage(msg="did not specify playlist id")
+        return render(request, 'base/home.html')
+
+    try:
+        playlist = Playlist.objects.get(id = playlist_id)
+    except Playlist.DoesNotExist:
+        logmessage(msg="couldn't find playlist of id " + playlist_id)
+        return render(request, 'base/home.html')
+    
+    playlist_user = playlist.user
+    if user.username != playlist_user.username:
+        logmessage(msg="playlist belongs to " + user.username + ", which isn't " + playlist_user.username)
+        return render(request, 'base/home.html')
+    
+    return render(request, 'items/view_playlist.html', {"playlist": playlist})
 
 #-----------------------------------------------------------------------------------------#
 class UpdateUserView(generic.UpdateView):

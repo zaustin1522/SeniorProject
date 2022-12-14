@@ -27,6 +27,10 @@ urlpatterns = [
     path('track/', views.show_track, name='show_track'),
     path('create_playlist/', views.make_playlist_with_track, name='create_nonempty_playlist'),
     path('add_to_playlist/', views.add_to_playlist, name='create_nonempty_playlist'),
+    path('manage_playlist/', views.manage_playlist, name='manage_playlist'),
+    path('remove_from_playlist/', views.remove_from_playlist, name='remove_from_playlist'),
+    path('rename_playlist/', views.rename_playlist, name='rename_playlist'),
+    path('delete_playlist/', views.delete_playlist, name='delete_playlist'),
 ]
 
 #-----------------------------------------------------------------------------------------#

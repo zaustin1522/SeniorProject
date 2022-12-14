@@ -1,0 +1,160 @@
+{% extends 'base/base.html' %}
+{% block title %}
+    Sharify - {{ playlist.name }}
+{% endblock %}
+{% load static %}
+{% block content %}
+<section data-bs-version="5.1" class="section form2 cid-tjoJwPWkFc" id="form02-2" style="width: 100vw;">
+    <div class="overlay" style="opacity: 0.7; background-color: rgb(22, 8, 48);"></div>
+    <div style="width: 60vw; min-width: 800px; position: relative; z-index: 2; margin: 0 auto; min-height: 66vh; color: white; border-radius: 1.25rem; background-color: rgba(255,255,255,.25); padding: 24px;">
+        <center>
+            <h1 id="playlist_name" title="Click to Rename" onclick="document.getElementById('playlist_name').hidden=true; document.getElementById('new_name').hidden=false;">{{playlist.name}}</h1>
+            <input id="new_name" title="Press enter to submit, leave blank to cancel." type="text" hidden="true" placeholder="{{playlist.name}}" style="text-align: center;" onkeypress="if (event.keyCode == 13) { renaming('{{ playlist.id }}'); };">
+        </center>
+        <table style="margin: 0 auto; display: flex; flex: 1 1 auto; width: 700px; max-width: 700px; min-height: 484px;">
+            <tbody style="margin: 0 40.5px 0 auto; min-height: 100%;">
+                {% for track in playlist.songs.all %}
+                    {% with comments=track.comment_set.all nested=True %}
+                        <tr id="{{playlist.id}}-{{track.track_id}}" style="width: 500px; text-align: left; max-width: 500px; min-height: 100%;">
+                            {% include 'items/mini_track.html' %}
+                            <td>
+                                <a onclick="remove_track('{{playlist.id}}-{{track.track_id}}')">
+                                    <img src="{% static 'images/delete_button.png' %}" style="max-width: 50px;">
+                                </a>
+                            </td>
+                        </tr>
+                    {% endwith %}
+                {% endfor %}
+            </tbody>
+        </table>
+        <a title="Delete Playlist" onclick="delete_playlist('{{playlist.id}}')">
+            <img src="{% static 'images/delete_button_x.png' %}" style="max-width: 75px; position: absolute; right: 20px; bottom: 20px;">
+        </a>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        let commentHttp = new XMLHttpRequest;
+        let playlistHttp = new XMLHttpRequest;
+        var playlist_table;
+        var playlist_id = "";
+        var track_id = "";
+        var new_name = "";
+		var comment_username = "";
+		var comment_text = "";
+		var comment_target_id = "";
+
+        function expand(elem) {
+            if (document.getElementById("active")){
+                shrink(document.getElementById("active"))
+            }
+            target_id = elem.getAttribute("frame");
+            target = document.getElementById("frame-" + target_id);
+            target.hidden = false;
+            elem.style.setProperty("transform", "rotate(180deg)");
+            elem.setAttribute("onclick", "shrink(this)");
+            elem.setAttribute("id", "active");
+        }
+        function shrink(elem) {
+            elem.removeAttribute("id");
+            target_id = elem.getAttribute("frame");
+            target = document.getElementById("frame-" + target_id);
+            target.hidden = true;
+            elem.style.setProperty("transform", "rotate(0deg)");
+            elem.setAttribute("onclick", "expand(this)");
+        }
+        function view_playlist(elem) {
+            options = Array.from(elem.options).map(e => e.value);
+            for (var playlist_target_id of Array.from(elem.options).map(e => e.getAttribute("playlist-id"))) {
+                if (playlist_target_id == null) {
+                    continue;
+                }
+                playlist = document.getElementById("table-" + playlist_target_id);
+                playlist.hidden = true;
+            }
+            playlist_option = elem.options[elem.selectedIndex];
+            playlist_target_id = playlist_option.getAttribute("playlist-id")
+            playlist = document.getElementById("table-" + playlist_target_id)
+            playlist.hidden = false
+        }
+        function remove_track(stringData) {
+            playlist_id = stringData.substring(0, stringData.indexOf('-'));
+            track_id = stringData.substring(stringData.indexOf('-') + 1);
+            let url = '/remove_from_playlist/?playlist_id=' + playlist_id + "&track_id=" + track_id;
+            playlistHttp.open('GET', url);
+            playlistHttp.send(null);
+        }
+        function renaming(id) {
+            playlist_id = id;
+            nameField = document.getElementById("new_name")
+            title = document.getElementById("playlist_name")
+            new_name = nameField.value;
+            if (new_name != "") {
+                title.innerHTML = new_name;
+                new_name_uri = encodeURIComponent(new_name)
+                let url = '/rename_playlist/?playlist_id=' + playlist_id + "&new_name=" + new_name_uri;
+                playlistHttp.open('GET', url)
+                playlistHttp.send(null)
+                nameField.value = "";
+            }
+            nameField.hidden=true;
+            title.hidden = false;
+        }
+        function delete_playlist(target_id) {
+            playlist_id = target_id;
+            if (confirm("Do you want to delete the playlist \"" + document.getElementById("playlist_name").innerHTML + "?\"\nThis is permanent.")) {
+                let url = '/delete_playlist/?deleting_id=' + playlist_id;
+                playlistHttp.open('GET', url)
+                playlistHttp.send(null)
+            }
+        }
+
+        playlistHttp.onload = () => {
+            if (playlistHttp.status == 200) {
+                track = document.getElementById(playlist_id + '-' + track_id);
+                playlist_body = track.parentNode;
+                playlist_table = playlist_body.parentNode;
+                playlist_body.removeChild(track);
+                if (playlist_table.rows.length == 0) {
+                    window.location.replace("/userprofile/");
+                }
+            }
+            if (playlistHttp.status == 100) {
+                document.getElementById("new_name").setAttribute('placeholder', "Failed to rename.");
+            }
+            if (playlistHttp.status == 202) {
+                document.getElementById("new_name").setAttribute('placeholder', new_name);
+            }
+            if (playlistHttp.status == 205) {
+                window.location.replace("/userprofile/");
+            }
+        }
+
+        commentHttp.onload = () => {
+            console.log('DONE: ', commentHttp.status);
+            if (commentHttp.status == 201) {
+                var comment_box = document.getElementById("comments-on-" + comment_target_id)
+                var new_comment = document.createElement("div");
+                new_comment.style = "flex-direction: row;  text-align: left; padding: 4px; background-color: rgba(0,0,0,.5); margin: 0 4px 4px; color: white; border-radius: .5rem;";
+                var new_wrapper = document.createElement("div");
+                new_wrapper.style = "display: flex; flex-direction: row; justify-content: space-between;";
+                var user_node = document.createElement("h6");
+                user_node.style = "font-weight: bold; margin: 0 0 2px !important;";
+                user_node.innerHTML = comment_username + ": ";
+                var time_node = document.createElement("h6");
+                time_node.style = "font-size: x-small; font-style: italic; margin: 0;";
+                time_node.innerHTML = "Just now";
+                var comment_node = document.createElement("p");
+                comment_node.style = "margin: 0 0 0 8px !important;";
+                comment_node.innerHTML = comment_text;
+                new_wrapper.appendChild(user_node);
+                new_wrapper.appendChild(time_node);
+                new_comment.appendChild(new_wrapper);
+                new_comment.appendChild(comment_node);
+                comment_box.insertBefore(new_comment, comment_box.children[1]);
+            }
+        };
+    </script>
+{% endblock %}
