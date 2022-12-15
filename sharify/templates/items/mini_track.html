@@ -1,0 +1,19 @@
+{% load static %}
+<td id="{{playlist.id}}-{{track.track_id}}" style="position: relative; vertical-align:top; border: 5px solid rgba(0,0,0,0); height: 100%; min-height: 100%;">
+    <a href="/track/?id={{track.track_id}}" target="_blank" style="color:white;">
+        <div style="display: flex; flex-direction: row; min-width: 500px; max-width: 500px; max-height: 125px; min-height: 125px; padding: 12px; border-radius: 1.25rem; background-color: rgba(255,255,255,.25);">
+            <img src="{{track.image_url}}" style="max-width: 100px; border-radius: 1rem; aspect-ratio: 1/1;"/>
+            <div style="flex-direction: column; margin: auto; margin-left: 24px; margin-right: 70px; max-height: 100px; overflow-y: auto;">
+                <h4 style="font-weight: bolder;">{{track.track_name}}</h4>
+                <h6>{{track.artist}}</h6>
+            </div>
+        </div>
+    </a>
+    {% if not nested %}
+        <img src="{% static 'images/down_button.png' %}" frame="{{track.track_id}}" onclick="expand(this)" style="position: absolute; right: 10px; top: 40px; border-radius: 25px; background-color: rgba(255, 255, 255, .5); max-width: 50px; aspect-ratio: 1/1;"/>
+        {% include 'social/track_card.html' %}
+    {% else %}
+        <img src="{% static 'images/down_button.png' %}" frame="{{playlist.id}}-{{track.track_id}}" onclick="expand(this)" style="position: absolute; right: 10px; top: 40px; border-radius: 25px; background-color: rgba(255, 255, 255, .5); max-width: 50px; aspect-ratio: 1/1;"/>
+        {% include 'social/track_card.html' %}
+    {% endif %}
+</td>

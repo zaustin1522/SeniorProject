@@ -34,6 +34,8 @@ class Migration(migrations.Migration):
                 ('dob', models.DateTimeField(blank=True, null=True)),
                 ('bio', models.TextField(default='')),
                 ('id', models.AutoField(primary_key=True, serialize=False)),
+                ('friends_are_public', models.BooleanField(default=True)),
+                ('playlists_are_public', models.BooleanField(default=True)),
                 ('friends', models.JSONField(default=list)),
                 ('pending', models.JSONField(default=sharify.models.User.pending_default)),
                 ('groups', models.ManyToManyField(blank=True, help_text='The groups this user belongs to. A user will get all permissions granted to each of their groups.', related_name='user_set', related_query_name='user', to='auth.Group', verbose_name='groups')),
@@ -52,6 +54,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('track_id', models.TextField(primary_key=True, serialize=False)),
                 ('track_name', models.TextField()),
+                ('image_url', models.TextField(default='')),
                 ('artist', models.TextField()),
                 ('popularity', models.FloatField()),
                 ('album_id', models.TextField()),

@@ -38,7 +38,7 @@
         </a>
         {% endif %}
     </div>
-    <div class="col-md-8 text-white" style="margin: auto auto auto 2.5vw; padding: 12px; width: max(25vw, 450px); height: min-content; border-radius: .5rem; background: linear-gradient(to left bottom, rgb(142, 155, 224), rgb(16, 13, 160));">
+    <div class="col-md-8 text-white" style="margin: auto auto auto 2.5vw; padding: 24px; width: max(30vw, 500px); height: min-content; border-radius: .5rem; background: linear-gradient(to left bottom, rgb(142, 155, 224), rgb(16, 13, 160));">
         <h6 style="font-size: max(16px, .95vw);">
             Information
         </h6>
@@ -91,16 +91,47 @@
         </div>
     </div>
 </div>
-<div class="row g-0" style="margin: 2.5vw auto 0; min-height: 100%; min-width: 785px;">
-    <div class="col-md-8 text-center" style="margin: auto 2.5vw auto auto; padding: 12px; width: max(25vw, 450px); aspect-ratio: 1/1; border-radius: .5rem; background: linear-gradient(to left top, rgb(142, 155, 224), rgb(16, 13, 160));">
+<div class="row g-0" style="margin: 2.5vw auto 0; min-height: 100%; min-width: 1000px;">
+    <div class="col-md-8 text-center" style="margin: auto 2.5vw auto auto; padding: 12px; width: max(30vw, 534px); aspect-ratio: 1/1; border-radius: .5rem; background: linear-gradient(to left top, rgb(142, 155, 224), rgb(16, 13, 160));">
     {% if user.is_authenticated and user.username == current_user.username or current_user.playlists_are_public %}
-        {% if playlists %}
-            {% for playlist in playlists %}
-                {{ playlist }}
-            {% endfor %}
-        {% else %}
-            <p style="color: white; padding-top: 46%; margin: auto;">{{ current_user }} has no playlists!</p>
-        {% endif %}
+        {% with nested=True %}
+            <select name="playlists" id="{{track.track_id}}" style="min-width: 100%; margin-top: 5px; height: 24px;" onchange="view_playlist(this)">
+                <option id="reset" value="reset" disabled selected>View Playlist</option>
+                {% for playlist in user.playlist_set.all %}
+                <option id="select-{{playlist.id}}" playlist-id="{{playlist.id}}" value="{{playlist.name}}">{{playlist.name}}</option>
+                {% endfor %}
+            </select>
+            <div style="max-height: 90%; overflow: auto; border-radius: 1.25rem;">
+                {% for playlist in current_user.playlist_set.all %}
+                    <table id="table-{{playlist.id}}" style="display: flex; flex: 1 1 auto; width: 500px; max-width: 500px; min-height: 484px;" hidden="true">
+                        <tbody style="min-height: 100%;">
+                            {% if user.is_authenticated and current_user.username == user.username %}
+                                <tr>
+                                    <td>
+                                        <a href="/manage_playlist/?playlist_id={{playlist.id}}">
+                                            <div style="margin: 0 auto; max-width: 500px; width: 100%; color: white; border-radius: 1.25rem; background-color: rgba(255, 255, 255, .25); padding: 5px;">
+                                                <center>
+                                                    <h1 style="margin: 0px;">Manage Playlist</h1>
+                                                </center>
+                                            </div>
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                            {% for track in playlist.songs.all %}
+                                {% with comments=track.comment_set.all %}
+                                    <tr id="{{playlist.id}}-{{track.id}}" style="width: 500px; text-align: left; max-width: 500px; min-height: 100%;">
+                                        {% include 'items/mini_track.html' %}
+                                    </tr>
+                                {% endwith %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% empty %}
+                    <p style="color: white; padding-top: 46%; margin: auto;">{{ current_user }} has no playlists!</p>
+                {% endfor %}
+            </div>
+        {% endwith %}
     {% else %}
         <p style="color: white; padding-top: 46%; margin: auto;"> {{ current_user.username }}'s playlists are private! </p>
     {% endif %}
@@ -113,3 +144,71 @@
     {% endif %}
     </div>
 </div>
+
+{% block scripts %}
+    <script>
+        let commentHttp = new XMLHttpRequest;
+		var comment_username = ""
+		var comment_text = ""
+		var comment_target_id = ""
+
+        function expand(elem) {
+            if (document.getElementById("active")){
+                shrink(document.getElementById("active"))
+            }
+            target_id = elem.getAttribute("frame");
+            target = document.getElementById("frame-" + target_id);
+            target.hidden = false;
+            elem.style.setProperty("transform", "rotate(180deg)");
+            elem.setAttribute("onclick", "shrink(this)");
+            elem.setAttribute("id", "active");
+        }
+        function shrink(elem) {
+            elem.removeAttribute("id");
+            target_id = elem.getAttribute("frame");
+            target = document.getElementById("frame-" + target_id);
+            target.hidden = true;
+            elem.style.setProperty("transform", "rotate(0deg)");
+            elem.setAttribute("onclick", "expand(this)");
+        }
+        function view_playlist(elem) {
+            options = Array.from(elem.options).map(e => e.value);
+            for (var playlist_target_id of Array.from(elem.options).map(e => e.getAttribute("playlist-id"))) {
+                if (playlist_target_id == null) {
+                    continue;
+                }
+                playlist = document.getElementById("table-" + playlist_target_id);
+                playlist.hidden = true;
+            }
+            playlist_option = elem.options[elem.selectedIndex];
+            playlist_target_id = playlist_option.getAttribute("playlist-id")
+            playlist = document.getElementById("table-" + playlist_target_id)
+            playlist.hidden = false
+        }
+
+        commentHttp.onload = () => {
+            console.log('DONE: ', commentHttp.status);
+            if (commentHttp.status == 201) {
+                var comment_box = document.getElementById("comments-on-" + comment_target_id)
+                var new_comment = document.createElement("div");
+                new_comment.style = "flex-direction: row;  text-align: left; padding: 4px; background-color: rgba(0,0,0,.5); margin: 0 4px 4px; color: white; border-radius: .5rem;";
+                var new_wrapper = document.createElement("div");
+                new_wrapper.style = "display: flex; flex-direction: row; justify-content: space-between;";
+                var user_node = document.createElement("h6");
+                user_node.style = "font-weight: bold; margin: 0 0 2px !important;";
+                user_node.innerHTML = comment_username + ": ";
+                var time_node = document.createElement("h6");
+                time_node.style = "font-size: x-small; font-style: italic; margin: 0;";
+                time_node.innerHTML = "Just now";
+                var comment_node = document.createElement("p");
+                comment_node.style = "margin: 0 0 0 8px !important;";
+                comment_node.innerHTML = comment_text;
+                new_wrapper.appendChild(user_node);
+                new_wrapper.appendChild(time_node);
+                new_comment.appendChild(new_wrapper);
+                new_comment.appendChild(comment_node);
+                comment_box.insertBefore(new_comment, comment_box.children[1]);
+            }
+        };
+    </script>
+{% endblock %}

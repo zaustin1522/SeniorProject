@@ -14,7 +14,7 @@ import json
 from .profile import *
 from .search import *
 from .forms import *
-from .models import Comment
+from .models import Comment, Playlist
 
 
 #-----------------------------------------------------------------------------------------#
@@ -94,8 +94,8 @@ def get_album(request: WSGIRequest):
         else:
             albums = {}
             if album != "":
-                albums = find_album_by_name(album)
-            return render(request, "results/results.html", albums)
+                albums = find_album_by_name(album, request.user)
+            return render(request, "results/album_results.html", {'results': albums})
 
 #-----------------------------------------------------------------------------------------#
 def get_track(request: WSGIRequest):
@@ -106,8 +106,13 @@ def get_track(request: WSGIRequest):
         else:
             tracks = {}
             if track != "":
-                tracks = find_track_by_name(track)
-            return render(request, "results/results.html", tracks)
+                tracks = find_track_by_name(track, request.user)
+            if not request.user.is_authenticated:
+                return render(request, "results/track_results.html", {"results": tracks})
+            else:
+                playlists = Playlist.objects.filter(user_id=request.user.id)
+                return render(request, "results/track_results.html", {"results": tracks, "playlists": playlists})
+
 
 #-----------------------------------------------------------------------------------------#
 def get_user(request: WSGIRequest):
@@ -141,17 +146,52 @@ def show_userprofile(request: WSGIRequest):
     return show_profile_for(request, findUser)
 
 #-----------------------------------------------------------------------------------------#
+def show_track(request: WSGIRequest):
+    track_id = request.GET.get('id', None)
+    if track_id is None:
+        logmessage(type = "TRACK", msg = "No id specified: redirecting to track browse.")
+        return get_track(request)
+    try:
+        track: Musicdata = Musicdata.objects.get(track_id = track_id)
+    except Musicdata.DoesNotExist:
+        logmessage(type = "TRACK", msg = "Invalid id specified: redirecting to track browse.")
+        return get_track(request)
+    logmessage(type = "TRACK", msg = "Track " + str(track) + " found: Displaying...")
+    return render(request, 'items/view_track.html', {
+        'track': track
+    })
+
+#-----------------------------------------------------------------------------------------#
 def comment(request: WSGIRequest):
-    if request.method == 'POST':
-        # create a form instance and populate it with data from the request:
-        form = CommentForm(request.POST)
-        # check whether it's valid:
-        if form.is_valid():
-             comment_on: Musicdata = Musicdata.objects.filter(track_id = form.cleaned_data['content_id']).first()
-             user: MyUser = request.user
-             comment: str = str(form.cleaned_data['comment'])
-             Comment.objects.create(comment_on=comment_on, user=user, comment=comment)
-    return render(request, 'social/comment.html', {})
+    on_type: str = request.GET.get('type')
+    if on_type == "album":
+        try:
+            comment_on: Musicdata = Musicdata.objects.filter(album_id = request.GET.get('id')).get(album_liason = True)
+        except Musicdata.DoesNotExist:
+            return HttpResponse(status=400)
+    else:
+        comment_on: Musicdata = Musicdata.objects.get(track_id = request.GET.get('id'))
+    user: MyUser = MyUser.objects.get(id=request.user.id)
+    comment: str = request.GET.get('comment')
+    Comment.objects.create(comment_on=comment_on, on_type= on_type, user=user, comment=comment)
+    return HttpResponse(status=201)
+
+#-----------------------------------------------------------------------------------------#
+def playlist_search_by_name(request: WSGIRequest,):
+    query = request.GET.get("query")
+    playlist_qset = Playlist.objects.filter(name__icontains=query)
+    temp = list(playlist_qset)
+    resp = []
+    [resp.append(playlist) for playlist in temp if playlist not in resp]
+    # Randomize to get different results each time
+    random.shuffle(resp)
+    # Return the id of up to 9 playlists
+    playlists = [item['album_id'] for item in resp[:9]]
+    playlistGrid = [playlists[i:i+3] for i in range(0, len(playlists), 3)]
+    return {
+        'results': playlistGrid,
+	    'type': "playlist"
+    }
 
 #-----------------------------------------------------------------------------------------#
 def make_playlist(request: WSGIRequest):

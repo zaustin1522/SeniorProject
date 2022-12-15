@@ -54,8 +54,8 @@ scope = [                   # "You agree that Sharify will be able to:"
     #'user-modify-playback-state',   # "Control Spotify on your devices"
     #'ugc-image-upload',             # "Upload images to personalize your profile or playlist cover"
     #'user-library-modify',          # "Add and remove items in Your Library"
-    #'playlist-modify-private',      # "Create, edit, and follow private playlists"
-    #'playlist-modify-public',       # "Create, edit, and follow playlists"
+    'playlist-modify-private',      # "Create, edit, and follow private playlists"
+    'playlist-modify-public',       # "Create, edit, and follow playlists"
     #'user-follow-modify',           # "Manage who you follow on Spotify"
     #'streaming',                    # "Stream and control Spotify on your other devices"
     ]
@@ -112,8 +112,8 @@ def unlink_spotify(request: WSGIRequest):
             profile = current_user.profile
             spotify_id = profile.spotify_id
             current_user.profile = None
-            profile.delete()
             current_user.save()
+            profile.delete()
             logmessage(type="UNLINKED", msg=current_user.username+" disconnected Spotify ID "+spotify_id)
         return redirect('/userprofile/')
     return redirect('/')
