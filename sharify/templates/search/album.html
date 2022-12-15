@@ -3,9 +3,9 @@
 {% block title %}Sharify - Album Search{% endblock %}
 
 {% block content %}
-<section data-bs-version="5.1" class="section form2 cid-tjoJwPWkFc" id="form02-2">
+<section data-bs-version="5.1" class="section form2 cid-tjoJwPWkFc" id="form02-2" style="width: 100vw;">
     <div class="overlay" style="opacity: 0.7; background-color: rgb(22, 8, 48);"></div>
-    <div class="container" style="min-height: 66vh; color: white; width: 75vw;">
+    <div style="width: 100vw; position: relative; z-index: 2; margin: 0 auto; min-height: 66vh; color: white;">
 		<center>
 			<h2>Album Search</h2>
 			<br>
@@ -18,4 +18,16 @@
 		<br>
 	</div>
 </section>
+{% endblock %}
+
+{% block scripts %}
+	<script>
+		let commentHttp = new XMLHttpRequest;
+		let playlistHttp = new XMLHttpRequest;
+		var playlist_target_id = "";
+		var playlist_track_id = "";
+		var comment_username = ""
+		var comment_text = ""
+		var comment_target_id = ""
+	</script>
 {% endblock %}
