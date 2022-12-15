@@ -2,31 +2,19 @@
 
 {% block title %}Sharify - Title Search{% endblock %}
 {% block content %}
-<section data-bs-version="5.1" class="section form2 cid-tjoJwPWkFc" id="form02-2" style="width: 100vw;">
+<section data-bs-version="5.1" class="section form2 cid-tjoJwPWkFc" id="form02-2">
     <div class="overlay" style="opacity: 0.7; background-color: rgb(22, 8, 48);"></div>
-    <div style="width: 100vw; position: relative; z-index: 2; margin: 0 auto; min-height: 66vh; color: white;">
-			<center>
-				<h2>Title Search</h2>
-				<br>
-				<input style="margin: 10px auto; width: 50%; min-width: 500px;" class="form-text col-8" type="text" name="track" hx-get="{% url 'sharify:get_track' %}" hx-trigger="keyup" hx-target="#search-results">
-				</input>
-				<br>
-				<div id="search-results" style="margin: 0 auto; min-height: 100%;">
-				</div>
-			</center>
+    <div class="container" style="min-height: 66vh; color: white; width: 75vw;">
+		<center>
+			<h2>Title Search</h2>
+			<br>
+			<input style="margin: 10px auto;" class="form-text col-8" type="text" name="track" hx-get="{% url 'sharify:get_track' %}" hx-trigger="keyup" hx-target="#search-results">
+			</input>
+			<br>
+			<div id="search-results">
+			</div>
+		</center>
 		<br>
 	</div>
 </section>
-{% endblock %}
-
-{% block scripts %}
-	<script>
-		let commentHttp = new XMLHttpRequest;
-		let playlistHttp = new XMLHttpRequest;
-		var playlist_target_id = "";
-		var playlist_track_id = "";
-		var comment_username = ""
-		var comment_text = ""
-		var comment_target_id = ""
-	</script>
 {% endblock %}

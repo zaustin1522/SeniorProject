@@ -9,14 +9,9 @@
 
 import json
 import random
-from urllib.parse import quote
-import requests
-from sharify.auth import get_access_token
-from sharify.log import logmessage
 
-from sharify.models import Comment, Musicdata
+from sharify.models import Musicdata
 from sharify.models import User as MyUser
-from sharify.scrape import scrape_album, scrape_track, update_images
 
 #-----------------------------------------------------------------------------------------#
 def find_albums(artist, from_year = None, to_year = None):
@@ -50,110 +45,34 @@ def find_albums(artist, from_year = None, to_year = None):
     return results
 
 #-----------------------------------------------------------------------------------------#
-def find_track_by_name(track: str, user: MyUser):
-    query = Musicdata.objects.filter(track_name__icontains = track)
+def find_track_by_name(track):
+    query = Musicdata.objects.filter(track_name__contains = track).values('track_id')
     resp = list(query)
+    # Randomize to get different results each time
     random.shuffle(resp)
-    resp = update_images(resp[:50])
-
-    resp = resp[:12]
-
-    if len(resp) < 12:
-        if pull_more_tracks(track, 12-len(resp), user):
-            query = Musicdata.objects.filter(track_name__icontains = track)
-            resp = update_images(list(query)[:50])
-            # Randomize to get different results each time
-            random.shuffle(resp)
-            resp = resp[:12]
-
-    songs: list = []
-    for item in resp:
-        comments = list(Comment.objects.filter(on_type = 'track').filter(comment_on_id = item).order_by('-posted_at'))
-        songs.append((item, comments))
-
     # Return the id of up to 12 songs
-    results = [songs[i:i+2] for i in range(0, len(songs), 2)]
-    
-    return results
-
-#-----------------------------------------------------------------------------------------#
-def pull_more_tracks(query: str, minimum: int, user: MyUser):
-    headers = {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + get_access_token(user),
+    songs = [item['track_id'] for item in resp[:12]]
+    results = [songs[i:i+4] for i in range(0, len(songs), 4)]
+    return {
+	'results': results,
+    'type': "track"
     }
 
-    params = {
-        'q': quote(query),
-        'type': 'track',
-        'market': 'ES',
-        'limit': 24,
-    }
-
-    response = requests.get('https://api.spotify.com/v1/search', params=params, headers=headers)
-
-    if response.status_code != 200:
-        return False
-    else:
-        track_json: json = json.loads(response.content)
-        for track in track_json['tracks']['items']:
-            try:
-                Musicdata.objects.get(track_id = track['id'])
-            except Musicdata.DoesNotExist:
-                scrape_album(track['album']['id'])
-        return True
-
 #-----------------------------------------------------------------------------------------#
-def find_album_by_name(album_name: str, user: MyUser):
-    query = Musicdata.objects.filter(album_liason = True).filter(album_name__icontains = album_name)
-    resp = list(query)
+def find_album_by_name(album):
+    query = Musicdata.objects.filter(album_name__contains = album).values('album_id')
+    temp = list(query)
+    resp = []
+    [resp.append(album) for album in temp if album not in resp]
+    # Randomize to get different results each time
     random.shuffle(resp)
-    resp = resp[:12]
-
-    if len(resp) < 12:
-        logmessage(msg="Not enough albums matched.")
-        if pull_more_albums(album_name, user):
-            query = Musicdata.objects.filter(album_liason = True).filter(album_name__icontains = album_name)
-            resp = list(query)
-            random.shuffle(resp)
-            resp = resp[:12]
-
-    albums: list = []
-    for album_liason in resp:
-        comments = list(Comment.objects.filter(on_type = 'album').filter(comment_on = album_liason).order_by('-posted_at'))
-        albums.append((album_liason, comments))
-
-    # Return the id of up to 12 songs
-    results = [albums[i:i+2] for i in range(0, len(albums), 2)]
-    return results
-
-#-----------------------------------------------------------------------------------------#
-def pull_more_albums(query: str, user: MyUser):
-    headers = {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + get_access_token(user),
+    # Return the id of up to 9 albums
+    albums = [item['album_id'] for item in resp[:9]]
+    albumGrid = [albums[i:i+3] for i in range(0, len(albums), 3)]
+    return {
+        'results': albumGrid,
+	'type': "album"
     }
-    params = {
-        'q': quote(query),
-        'type': 'album',
-        'market': 'US'
-    }
-    logmessage(msg="Sending request...")
-    response = requests.get('https://api.spotify.com/v1/search', params=params, headers=headers)
-
-    if response.status_code != 200:
-        logmessage(msg="Pulling didn't work.")
-        return False
-    else:
-        album_json: json = json.loads(response.content)
-        for album in album_json['albums']['items']:
-            if Musicdata.objects.filter(album_id = album['id']).count() == 0:
-                logmessage(msg="Gotta scrape!")
-                scrape_album(album['id'])
-    return True
-
 
 #-----------------------------------------------------------------------------------------#
 def find_user_by_name(user):

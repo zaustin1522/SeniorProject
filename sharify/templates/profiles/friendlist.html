@@ -19,7 +19,7 @@
     </li>
     {% endif %}
 </ul>
-<div id="friendlist" style="width: 100%; margin: 0 auto; aspect-ratio: 1/1.15; overflow-y: auto;">
+<div id="friendlist" style="width: 100%; margin: 0 auto; aspect-ratio: 1/1.15; overflow-y: scroll;">
     <table style="margin: 0 auto; width: 100%; max-height: 100%; background-color: rgba(0, 0, 0, .15); border-bottom-left-radius: .5rem; border-bottom-right-radius: .5rem;">
         <tbody style="max-height: 100%;">
         {% for friend in friends %}
@@ -45,7 +45,7 @@
         </tbody>
     </table>
 </div>
-<div id="inbox" hidden="True" style="width: 100%; margin: 0 auto; aspect-ratio: 1/1.15; overflow-y: auto;">
+<div id="inbox" hidden="True" style="width: 100%; margin: 0 auto; aspect-ratio: 1/1.15; overflow-y: scroll;">
     <table style="margin: 0 auto; width: 100%; max-height: 100%; background-color: rgba(0, 0, 0, .15); border-bottom-left-radius: .5rem; border-bottom-right-radius: .5rem;">
         {% for req in inbox %}
         <tr style="border-top: 1px solid white; height: 54px;">
@@ -63,7 +63,7 @@
         {% endfor %}
     </table>
 </div>
-<div id="sentbox" hidden="True" style="width: 100%; margin: 0 auto; aspect-ratio: 1/1.15; overflow-y: auto;">
+<div id="sentbox" hidden="True" style="width: 100%; margin: 0 auto; aspect-ratio: 1/1.15; overflow-y: scroll;">
     <table style="margin: 0 auto; width: 100%; max-height: 100%; background-color: rgba(0, 0, 0, .15); border-bottom-left-radius: .5rem; border-bottom-right-radius: .5rem;">
         {% for req in outbox %}
         <tr style="border-top: 1px solid white; height: 54px;">

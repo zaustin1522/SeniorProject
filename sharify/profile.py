@@ -37,6 +37,12 @@ def get_outbox_objects(current_user: MyUser):
     return outbox_list
 
 #-----------------------------------------------------------------------------------------#
+def get_playlist_objects(current_user: MyUser):
+    playlist_query = Playlist.objects.filter(user=current_user)
+    playlist_list: list = list(playlist_query)
+    return playlist_list
+
+#-----------------------------------------------------------------------------------------#
 def add_friend(request: WSGIRequest):
     other: int = request.GET.get('other')
     current_user: MyUser = request.user
@@ -133,6 +139,7 @@ def show_profile_for(request: WSGIRequest, current_user: MyUser):
     friends = get_friend_objects(current_user)
     inbox = get_inbox_objects(current_user)
     outbox = get_outbox_objects(current_user)
+    playlists = get_playlist_objects(current_user)
 
     # User does not have a linked Spotify Profile
     if current_user.profile is None:
@@ -141,6 +148,7 @@ def show_profile_for(request: WSGIRequest, current_user: MyUser):
             'friends': friends,
             'inbox': inbox,
             'outbox': outbox,
+            'playlists': playlists,
             'can_link': current_user == request.user,
             'needs_linking': True,
             'message': current_user.username + " hasn't linked Spotify!",
@@ -169,6 +177,7 @@ def show_profile_for(request: WSGIRequest, current_user: MyUser):
             'friends': friends,
             'inbox': inbox,
             'outbox': outbox,
+            'playlists': playlists,
             'needs_linking': current_user == request.user,
             'message': "Something went wrong, try again later!",
             'fav_artist': "What IS art, really?"
@@ -188,6 +197,7 @@ def show_profile_for(request: WSGIRequest, current_user: MyUser):
             'friends': friends,
             'inbox': inbox,
             'outbox': outbox,
+            'playlists': playlists,
             'needs_linking': current_user == request.user,
             'message': "Something went wrong, try again later!",
             'fav_artist': fav_artist
@@ -195,11 +205,9 @@ def show_profile_for(request: WSGIRequest, current_user: MyUser):
     fav_track_data: json = json.loads(response.content)
     if fav_track_data is not None and 'items' in fav_track_data:
         #their favorite track wasn't in the DB: check whole album, add if necessary (2 API calls inside)
-        try:
-            fav_track = Musicdata.objects.get(track_id=fav_track_data['items'][0]['id'])
-        except Musicdata.DoesNotExist:
+        if Musicdata.objects.filter(track_id=fav_track_data['items'][0]['id']).count() == 0:
             scrape_album(fav_track_data['items'][0]['album']['id'])
-            fav_track = Musicdata.objects.get(track_id=fav_track_data['items'][0]['id'])
+        fav_track = Musicdata.objects.get(track_id = fav_track_data['items'][0]['id'])
     else:
         # haha, high level humor
         fav_track: str = "4'33\" by John Cage"
@@ -216,6 +224,7 @@ def show_profile_for(request: WSGIRequest, current_user: MyUser):
             'friends': friends,
             'inbox': inbox,
             'outbox': outbox,
+            'playlists': playlists,
             'needs_linking': current_user == request.user,
             'message': "Something went wrong, try again later!",
             'fav_artist': fav_artist,
@@ -240,6 +249,7 @@ def show_profile_for(request: WSGIRequest, current_user: MyUser):
                         'friends': friends,
                         'inbox': inbox,
                         'outbox': outbox,
+                        'playlists': playlists,
                         'listening': True,
                         'current_track': str(current_track),
                         'fav_artist': fav_artist,
@@ -251,6 +261,7 @@ def show_profile_for(request: WSGIRequest, current_user: MyUser):
                         'friends': friends,
                         'inbox': inbox,
                         'outbox': outbox,
+                        'playlists': playlists,
                         'listening': False,
                         'message': "An ad!",
                         'fav_artist': fav_artist,
@@ -262,6 +273,7 @@ def show_profile_for(request: WSGIRequest, current_user: MyUser):
         'friends': friends,
         'inbox': inbox,
         'outbox': outbox,
+        'playlists': playlists,
         'listening': False,
         'message': "Nothing right now!",
         'fav_artist': fav_artist,

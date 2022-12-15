@@ -5,14 +5,12 @@ from django.utils import timezone
 class Musicdata(models.Model):
     track_id = models.TextField(primary_key=True)
     track_name = models.TextField()
-    image_url = models.TextField(default="")
     artist = models.TextField()
     popularity  = models.FloatField()
     album_id  = models.TextField()
     album_name = models.TextField()
     album_release_date = models.IntegerField()
     duration_ms  = models.IntegerField()
-    album_liason = models.BooleanField(default=False)
 
     def __str__(self):
         return "\"" + self.track_name + "\" by " + self.artist
@@ -50,9 +48,16 @@ class User(AbstractUser):
 
 
 class Playlist(models.Model):
+    id = models.CharField(max_length=120, primary_key=True)
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
+    spotify_id = models.CharField(max_length=120, default="null")
     name = models.TextField(max_length=100)
-    date_created = models.DateTimeField(default = timezone.now)
+    url = models.CharField(max_length=1000)
+    num_tracks = models.IntegerField(null=True)
+    featured = models.BooleanField(default=False)
+    genre = models.CharField(max_length=100)
+    date_created = models.CharField(max_length=500, default="No date")
+    image = models.ImageField(blank=True, default="")
     songs = models.ManyToManyField(Musicdata)
 
     def __str__(self):
@@ -61,13 +66,12 @@ class Playlist(models.Model):
 class Comment(models.Model):
     id = models.AutoField(primary_key=True)
     posted_at = models.DateTimeField(default = timezone.now)
-    comment_on = models.ForeignKey(Musicdata, on_delete = models.DO_NOTHING, db_constraint=False)
-    on_type = models.TextField(default="track", blank=False, null=False)
-    user = models.ForeignKey(User, on_delete = models.DO_NOTHING)
+    comment_on = models.ForeignKey(Musicdata, on_delete = models.DO_NOTHING)
+    user = models.ForeignKey(User, on_delete = models.DO_NOTHING, default=7)
     comment = models.TextField(default = "")
 
     class Meta: 
-        ordering = ('comment_on', '-posted_at',) 
+        ordering = ('comment_on', 'posted_at',) 
 
     def __str__(self): 
-        return "{}: {}".format(self.user.username, self.comment)
+        return '{}: {}'.format(self.user.username, self.comment)
