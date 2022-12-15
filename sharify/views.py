@@ -295,20 +295,100 @@ def rename_playlist(request: WSGIRequest):
 def add_playlist_to_spotify(request: WSGIRequest):
     user: MyUser = request.user
     target = request.GET.get("playlist_id")
+    method = request.GET.get("method")
+    logmessage(msg="1: " + method)
     global auth_manager
     try:
         playlist = Playlist.objects.get(id=target)     # playlist selected from frontend
     except Playlist.DoesNotExist:
         return HttpResponse(status=422, content="No such playlist with id " + target)
 
-    songs: list = []
-    for song in playlist.songs:
-        songs.append(song.track_id)
+    
+    songs: list = list(playlist.songs.values_list("track_id", flat=True))
     sp = spotipy.Spotify(auth=get_access_token(user))
-    logmessage(msg=playlist.songs.values_list("track_id"))
-    sp_playlist = sp.user_playlist_create(user=sp.current_user()['id'], name=playlist.name)
-    sp.playlist_add_items(playlist_id = sp_playlist['id'], items=songs)
-    return HttpResponse(status=200)
+    spotify_playlists: json = sp.user_playlists(user=user.profile.spotify_id)
+    sp_p_ids: dict = {}
+    sp_p_items: dict = {}
+    for item in spotify_playlists['items']:
+        sp_p_items[item['id']] = sp.playlist_items(playlist_id=item['id'])['items']
+        scrape_playlist(sp_p_items[item['id']])
+        sp_p_ids[item['name']] = item['id']
+
+    # playlist either has no spotify id OR that playlist is no longer in the spotify account
+    if playlist.spotify_id is None or playlist.spotify_id not in sp_p_ids.values():
+        # playlist with the same name already exists in spotify account
+        if playlist.name in sp_p_ids.keys():
+            if method == "safe":
+                return HttpResponse("safe rename", status=200)
+            elif method == "merge":
+                sp_tracks = sp_p_items[sp_p_ids[playlist.name]]
+                sp_track_ids: list = []
+                for track in sp_tracks:
+                    sp_track_ids.append(track['track']['id'])
+                sh_track_ids: list = []
+                for track in playlist.songs.all():
+                    track: Musicdata
+                    sh_track_ids.append(track.track_id)
+                missing_from_sp: list = []
+                missing_from_sh: list = []
+                for track in sh_track_ids:
+                    if track not in sp_track_ids:
+                        missing_from_sp.append(track)
+                for track in sp_track_ids:
+                    if track not in sh_track_ids:
+                        missing_from_sh.append(track)
+                missing_from_sh = Musicdata.objects.filter(track_id__in=missing_from_sh)
+                for track in missing_from_sh:
+                    playlist.songs.add(track)
+                playlist.spotify_id = sp_p_ids[playlist.name]
+                playlist.save()
+                sp.user_playlist_add_tracks(user.profile.spotify_id, playlist.spotify_id, missing_from_sp)
+                return HttpResponse("merge success", status=202)
+            elif method == "clobber":
+                sp.user_playlist_replace_tracks(user.profile.spotify_id, sp_p_ids[playlist.name], list(playlist.songs.all().values_list('track_id', flat=True)))
+                sp.user_playlist_change_details(user.profile.spotify_id, playlist.spotify_id, playlist.name)
+                return HttpResponse("clobber success", status=202)
+        #playlist by that name does not exist on spotify account, create new
+        else:
+            sp_playlist = sp.user_playlist_create(user=user.profile.spotify_id, name=playlist.name)
+            playlist.spotify_id=sp_playlist['id']
+            playlist.save()
+            sp.playlist_add_items(playlist_id=playlist.spotify_id, items=songs)
+            return HttpResponse("playlist created", status=201)
+    # playlist exists on spotify already
+    else:
+        if method == "safe":
+            sp.user_playlist_change_details(user.profile.spotify_id, playlist.spotify_id, playlist.name)
+            return HttpResponse("safe exists", status=200)
+        elif method == "merge":
+            sp_tracks = sp_p_items[playlist.spotify_id]
+            sp_track_ids: list = []
+            for track in sp_tracks:
+                sp_track_ids.append(track['track']['id'])
+            sh_track_ids: list = []
+            for track in playlist.songs.all():
+                track: Musicdata
+                sh_track_ids.append(track.track_id)
+            missing_from_sp: list = []
+            missing_from_sh: list = []
+            for track in sh_track_ids:
+                if track not in sp_track_ids:
+                    missing_from_sp.append(track)
+            for track in sp_track_ids:
+                if track not in sh_track_ids:
+                    missing_from_sh.append(track)
+            missing_from_sh = Musicdata.objects.filter(track_id__in=missing_from_sh)
+            for track in missing_from_sh:
+                playlist.songs.add(track)
+            playlist.save()
+            if len(missing_from_sp) > 0:
+                sp.user_playlist_add_tracks(user.profile.spotify_id, playlist.spotify_id, missing_from_sp)
+            return HttpResponse("merge success", status=202)
+        elif method == "clobber":
+            sp.user_playlist_replace_tracks(user.profile.spotify_id, playlist.spotify_id, list(playlist.songs.all().values_list('track_id', flat=True)))
+            sp.user_playlist_change_details(user.profile.spotify_id, playlist.spotify_id, playlist.name)
+            return HttpResponse("clobber success", status=202)
+        
 
 #-----------------------------------------------------------------------------------------#
 def manage_playlist(request: WSGIRequest):

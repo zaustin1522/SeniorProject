@@ -31,6 +31,7 @@ urlpatterns = [
     path('remove_from_playlist/', views.remove_from_playlist, name='remove_from_playlist'),
     path('rename_playlist/', views.rename_playlist, name='rename_playlist'),
     path('delete_playlist/', views.delete_playlist, name='delete_playlist'),
+    path('save_playlist/', views.add_playlist_to_spotify, name='save_playlist'),
 ]
 
 #-----------------------------------------------------------------------------------------#

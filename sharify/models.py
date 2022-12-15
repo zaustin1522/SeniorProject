@@ -54,6 +54,7 @@ class Playlist(models.Model):
     name = models.TextField(max_length=100)
     date_created = models.DateTimeField(default = timezone.now)
     songs = models.ManyToManyField(Musicdata)
+    spotify_id = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return self.name
