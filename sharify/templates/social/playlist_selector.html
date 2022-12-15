@@ -17,7 +17,7 @@
             name = "";
             while((name == "" || name.toLowerCase() == "create") && name != null){
                 name = prompt("What should we call your new playlist?", "My Favorites");
-                if (name == null) {
+                if (name == null || name == "null") {
                     alert("Well nevermind, then.");
                     continue;
                 }
