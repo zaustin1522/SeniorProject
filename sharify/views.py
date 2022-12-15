@@ -154,7 +154,228 @@ def comment(request: WSGIRequest):
     return render(request, 'social/comment.html', {})
 
 #-----------------------------------------------------------------------------------------#
+def make_playlist(request: WSGIRequest):
+    name = request.GET.get("playlist_name")
+    user: MyUser = request.user
+    Playlist.objects.create(
+            user = user,
+            name = name
+        )
+    return HttpResponse(status=201)
 
+#-----------------------------------------------------------------------------------------#
+def make_playlist_with_track(request: WSGIRequest):
+    name = request.GET.get("playlist_name")
+    track_id = request.GET.get("track_id")
+    print(request.body)
+    try:
+        track = Musicdata.objects.get(track_id = track_id)
+    except Musicdata.DoesNotExist:
+        return HttpResponse(status=400)
+    
+    user: MyUser = request.user
+    playlist = Playlist.objects.create(
+            user = user,
+            name = name
+        )
+    playlist.songs.add(track)
+    return HttpResponse(status=201, content="Successfully made playlist \"" + name + "\" containing the song " + str(track) + "\nPlease refresh the page or make another search to add songs to the playlist.")
+
+#-----------------------------------------------------------------------------------------#
+def delete_playlist(request: WSGIRequest):
+    target = request.GET.get("deleting_id")
+    return delete_playlist_by_id(target)
+
+#-----------------------------------------------------------------------------------------#
+def delete_playlist_by_id(target: str):
+    try:
+        playlist = Playlist.objects.get(id=target)     # grab id from frontend
+    except Playlist.DoesNotExist:
+        return HttpResponse(status=422, content="No such playlist with id " + target)
+
+    playlist.delete()
+    return HttpResponse(status=205)
+
+#-----------------------------------------------------------------------------------------#
+def add_to_playlist(request: WSGIRequest):
+    new_song = request.GET.get("track_id")
+    target = request.GET.get("playlist_id")
+    try:
+        playlist = Playlist.objects.get(id=target)     # playlist selected from frontend
+    except Playlist.DoesNotExist:
+        return HttpResponse(status=422, content="No such playlist with id " + target)
+
+    try:
+        song = Musicdata.objects.get(track_id=new_song)    # song selected from frontend
+    except Musicdata.DoesNotExist:
+        return HttpResponse(status=422, content="No such track with id " + new_song)
+
+    playlist_songs = list(playlist.songs.values('track_id'))
+    playlist_songs = list(playlist_songs[0].values())
+    if song in playlist_songs:
+        return HttpResponse(status=406, content=str(song) + " is already in playlist \"" + playlist.name + "\"")
+    playlist.songs.add(song.track_id)
+    playlist.save()
+    return HttpResponse(status=200, content="Successfully added " + str(song) + " to playlist \"" + playlist.name + "\"")
+
+#-----------------------------------------------------------------------------------------#
+def remove_from_playlist(request: WSGIRequest):
+    to_delete = request.GET.get("track_id")
+    target = request.GET.get("playlist_id")
+    try:
+        playlist = Playlist.objects.get(id=target)     # playlist selected from frontend
+    except Playlist.DoesNotExist:
+        return HttpResponse(status=422, content="No such playlist with id " + target)
+
+    try:
+        song: Musicdata = playlist.songs.get(track_id=to_delete)    # song selected from frontend
+    except Musicdata.DoesNotExist:
+        return HttpResponse(status=422, content="No such track with id " + to_delete)
+
+    playlist.songs.remove(song)
+    playlist.save()
+    if playlist.songs.count() == 0:
+        delete_playlist_by_id(target)
+    return HttpResponse(status=200)
+
+#-----------------------------------------------------------------------------------------#
+def rename_playlist(request: WSGIRequest):
+    new_name = request.GET.get("new_name")
+    target = request.GET.get("playlist_id")
+    try:
+        playlist = Playlist.objects.get(id=target)     # playlist selected from frontend
+    except Playlist.DoesNotExist:
+        return HttpResponse(status=422, content="No such playlist with id " + target)
+
+    playlist.name = new_name
+    playlist.save()
+    return HttpResponse(status=202)
+
+#-----------------------------------------------------------------------------------------#
+def add_playlist_to_spotify(request: WSGIRequest):
+    user: MyUser = request.user
+    target = request.GET.get("playlist_id")
+    method = request.GET.get("method")
+    logmessage(msg="1: " + method)
+    global auth_manager
+    try:
+        playlist = Playlist.objects.get(id=target)     # playlist selected from frontend
+    except Playlist.DoesNotExist:
+        return HttpResponse(status=422, content="No such playlist with id " + target)
+
+    
+    songs: list = list(playlist.songs.values_list("track_id", flat=True))
+    sp = spotipy.Spotify(auth=get_access_token(user))
+    spotify_playlists: json = sp.user_playlists(user=user.profile.spotify_id)
+    sp_p_ids: dict = {}
+    sp_p_items: dict = {}
+    for item in spotify_playlists['items']:
+        sp_p_items[item['id']] = sp.playlist_items(playlist_id=item['id'])['items']
+        scrape_playlist(sp_p_items[item['id']])
+        sp_p_ids[item['name']] = item['id']
+
+    # playlist either has no spotify id OR that playlist is no longer in the spotify account
+    if playlist.spotify_id is None or playlist.spotify_id not in sp_p_ids.values():
+        # playlist with the same name already exists in spotify account
+        if playlist.name in sp_p_ids.keys():
+            if method == "safe":
+                return HttpResponse("safe rename", status=200)
+            elif method == "merge":
+                sp_tracks = sp_p_items[sp_p_ids[playlist.name]]
+                sp_track_ids: list = []
+                for track in sp_tracks:
+                    sp_track_ids.append(track['track']['id'])
+                sh_track_ids: list = []
+                for track in playlist.songs.all():
+                    track: Musicdata
+                    sh_track_ids.append(track.track_id)
+                missing_from_sp: list = []
+                missing_from_sh: list = []
+                for track in sh_track_ids:
+                    if track not in sp_track_ids:
+                        missing_from_sp.append(track)
+                for track in sp_track_ids:
+                    if track not in sh_track_ids:
+                        missing_from_sh.append(track)
+                missing_from_sh = Musicdata.objects.filter(track_id__in=missing_from_sh)
+                for track in missing_from_sh:
+                    playlist.songs.add(track)
+                playlist.spotify_id = sp_p_ids[playlist.name]
+                playlist.save()
+                sp.user_playlist_add_tracks(user.profile.spotify_id, playlist.spotify_id, missing_from_sp)
+                return HttpResponse("merge success", status=202)
+            elif method == "clobber":
+                sp.user_playlist_replace_tracks(user.profile.spotify_id, sp_p_ids[playlist.name], list(playlist.songs.all().values_list('track_id', flat=True)))
+                sp.user_playlist_change_details(user.profile.spotify_id, playlist.spotify_id, playlist.name)
+                return HttpResponse("clobber success", status=202)
+        #playlist by that name does not exist on spotify account, create new
+        else:
+            sp_playlist = sp.user_playlist_create(user=user.profile.spotify_id, name=playlist.name)
+            playlist.spotify_id=sp_playlist['id']
+            playlist.save()
+            sp.playlist_add_items(playlist_id=playlist.spotify_id, items=songs)
+            return HttpResponse("playlist created", status=201)
+    # playlist exists on spotify already
+    else:
+        if method == "safe":
+            sp.user_playlist_change_details(user.profile.spotify_id, playlist.spotify_id, playlist.name)
+            return HttpResponse("safe exists", status=200)
+        elif method == "merge":
+            sp_tracks = sp_p_items[playlist.spotify_id]
+            sp_track_ids: list = []
+            for track in sp_tracks:
+                sp_track_ids.append(track['track']['id'])
+            sh_track_ids: list = []
+            for track in playlist.songs.all():
+                track: Musicdata
+                sh_track_ids.append(track.track_id)
+            missing_from_sp: list = []
+            missing_from_sh: list = []
+            for track in sh_track_ids:
+                if track not in sp_track_ids:
+                    missing_from_sp.append(track)
+            for track in sp_track_ids:
+                if track not in sh_track_ids:
+                    missing_from_sh.append(track)
+            missing_from_sh = Musicdata.objects.filter(track_id__in=missing_from_sh)
+            for track in missing_from_sh:
+                playlist.songs.add(track)
+            playlist.save()
+            if len(missing_from_sp) > 0:
+                sp.user_playlist_add_tracks(user.profile.spotify_id, playlist.spotify_id, missing_from_sp)
+            return HttpResponse("merge success", status=202)
+        elif method == "clobber":
+            sp.user_playlist_replace_tracks(user.profile.spotify_id, playlist.spotify_id, list(playlist.songs.all().values_list('track_id', flat=True)))
+            sp.user_playlist_change_details(user.profile.spotify_id, playlist.spotify_id, playlist.name)
+            return HttpResponse("clobber success", status=202)
+        
+
+#-----------------------------------------------------------------------------------------#
+def manage_playlist(request: WSGIRequest):
+    if not request.user.is_authenticated:
+        logmessage(msg="user isn't logged in!")
+        return render(request, 'base/home.html')
+
+    user: MyUser = request.user
+    playlist_id = request.GET.get("playlist_id")
+    if playlist_id is None:
+        logmessage(msg="did not specify playlist id")
+        return render(request, 'base/home.html')
+
+    try:
+        playlist = Playlist.objects.get(id = playlist_id)
+    except Playlist.DoesNotExist:
+        logmessage(msg="couldn't find playlist of id " + playlist_id)
+        return render(request, 'base/home.html')
+    
+    playlist_user = playlist.user
+    if user.username != playlist_user.username:
+        logmessage(msg="playlist belongs to " + user.username + ", which isn't " + playlist_user.username)
+        return render(request, 'base/home.html')
+    
+    return render(request, 'items/view_playlist.html', {"playlist": playlist})
+
+#-----------------------------------------------------------------------------------------#
 class UpdateUserView(generic.UpdateView):
     form_class = EditUserProfileForm
     template_name = 'profiles/edit_profile.html'

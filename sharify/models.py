@@ -59,6 +59,7 @@ class Playlist(models.Model):
     date_created = models.CharField(max_length=500, default="No date")
     image = models.ImageField(blank=True, default="")
     songs = models.ManyToManyField(Musicdata)
+    spotify_id = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return self.name
