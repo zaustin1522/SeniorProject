@@ -11,7 +11,7 @@ from django.http import Http404
 from django.urls import reverse_lazy
 from django.views import generic
 import json
-from .profile import *
+from .profiles import *
 from .search import *
 from .forms import *
 from .models import Comment, Playlist
@@ -296,13 +296,11 @@ def add_playlist_to_spotify(request: WSGIRequest):
     user: MyUser = request.user
     target = request.GET.get("playlist_id")
     method = request.GET.get("method")
-    logmessage(msg="1: " + method)
     global auth_manager
     try:
         playlist = Playlist.objects.get(id=target)     # playlist selected from frontend
     except Playlist.DoesNotExist:
         return HttpResponse(status=422, content="No such playlist with id " + target)
-
     
     songs: list = list(playlist.songs.values_list("track_id", flat=True))
     sp = spotipy.Spotify(auth=get_access_token(user))
@@ -388,7 +386,57 @@ def add_playlist_to_spotify(request: WSGIRequest):
             sp.user_playlist_replace_tracks(user.profile.spotify_id, playlist.spotify_id, list(playlist.songs.all().values_list('track_id', flat=True)))
             sp.user_playlist_change_details(user.profile.spotify_id, playlist.spotify_id, playlist.name)
             return HttpResponse("clobber success", status=202)
-        
+
+#-----------------------------------------------------------------------------------------#
+def refresh_playlist(request: WSGIRequest):
+    user: MyUser = request.user
+    target = request.GET.get("playlist_id")
+    global auth_manager
+    try:
+        playlist = Playlist.objects.get(id=target)     # playlist selected from frontend
+    except Playlist.DoesNotExist:
+        return HttpResponse(status=422, content="No such playlist with id " + target)
+    sp = spotipy.Spotify(auth=get_access_token(user))
+    spotify_playlist = sp.user_playlist(user.profile.spotify_id, playlist.spotify_id)
+    playlist.name = spotify_playlist['name']
+    playlist.save()
+    items_json = spotify_playlist['tracks']['items']
+    scrape_playlist(items_json)
+    for music in playlist.songs.all():
+        playlist.songs.remove(music)
+    for track in items_json:
+        playlist.songs.add(Musicdata.objects.get(track_id=track['track']['id']))
+    return HttpResponse("refreshed", status=200)
+
+#-----------------------------------------------------------------------------------------#
+def get_playlists(request: WSGIRequest):
+    user: MyUser = request.user
+    global auth_manager
+    sp = spotipy.Spotify(auth=get_access_token(user))
+    spotify_playlists: json = sp.user_playlists(user=user.profile.spotify_id)
+    users_playlists: list = []
+    users_playlists_data: list = []
+    for spotify_playlist in spotify_playlists['items']:
+        if spotify_playlist['owner']['id'] == user.profile.spotify_id:
+            playlist_items = sp.playlist_items(spotify_playlist['id'])['items']
+            scrape_playlist(playlist_items)
+            users_playlists.append(playlist_items)
+            users_playlists_data.append(spotify_playlist)
+    
+    for i in range(len(users_playlists)):
+        data = users_playlists_data[i]
+        try:
+            existing = Playlist.objects.get(spotify_id=data['id'])
+            existing.delete()
+        except Playlist.DoesNotExist:
+            None
+        new_playlist: Playlist = Playlist.objects.create(name=data['name'], spotify_id=data['id'], user=user)
+        for item in users_playlists[i]:
+            new_playlist.songs.add(Musicdata.objects.get(track_id=item['track']['id']))
+        new_playlist.save()
+
+
+    return HttpResponse("refreshed", status=200)
 
 #-----------------------------------------------------------------------------------------#
 def manage_playlist(request: WSGIRequest):
