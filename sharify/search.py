@@ -87,7 +87,7 @@ def pull_more_tracks(query: str, minimum: int, user: MyUser):
     params = {
         'q': quote(query),
         'type': 'track',
-        'market': 'ES',
+        'market': 'US',
         'limit': 24,
     }
 
