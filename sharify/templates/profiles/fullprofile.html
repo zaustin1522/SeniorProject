@@ -97,6 +97,9 @@
         {% with nested=True %}
             <select name="playlists" id="{{track.track_id}}" style="min-width: 100%; margin-top: 5px; height: 24px;" onchange="view_playlist(this)">
                 <option id="reset" value="reset" disabled selected>View Playlist</option>
+                {% if current_user.username == user.username and current_user.profile is not None %}
+                    <option id="refresh" value="refresh">Fetch from Spotify</option>
+                {% endif %}
                 {% for playlist in user.playlist_set.all %}
                 <option id="select-{{playlist.id}}" playlist-id="{{playlist.id}}" value="{{playlist.name}}">{{playlist.name}}</option>
                 {% endfor %}
@@ -173,17 +176,25 @@
         }
         function view_playlist(elem) {
             options = Array.from(elem.options).map(e => e.value);
-            for (var playlist_target_id of Array.from(elem.options).map(e => e.getAttribute("playlist-id"))) {
-                if (playlist_target_id == null) {
-                    continue;
-                }
-                playlist = document.getElementById("table-" + playlist_target_id);
-                playlist.hidden = true;
-            }
             playlist_option = elem.options[elem.selectedIndex];
-            playlist_target_id = playlist_option.getAttribute("playlist-id")
-            playlist = document.getElementById("table-" + playlist_target_id)
-            playlist.hidden = false
+            if (playlist_option.value == "refresh"){
+                if (confirm("Do you want to refresh your playlists with data from your Spotify account?")) {
+                    let url = "/get_playlists/"
+                    commentHttp.open('GET', url);
+                    commentHttp.send(null);
+                }
+            } else {
+                for (var playlist_target_id of Array.from(elem.options).map(e => e.getAttribute("playlist-id"))) {
+                    if (playlist_target_id == null) {
+                        continue;
+                    }
+                    playlist = document.getElementById("table-" + playlist_target_id);
+                    playlist.hidden = true;
+                }
+                playlist_target_id = playlist_option.getAttribute("playlist-id")
+                playlist = document.getElementById("table-" + playlist_target_id)
+                playlist.hidden = false
+            }
         }
 
         commentHttp.onload = () => {
@@ -208,6 +219,8 @@
                 new_comment.appendChild(new_wrapper);
                 new_comment.appendChild(comment_node);
                 comment_box.insertBefore(new_comment, comment_box.children[1]);
+            } else if (commentHttp.status == 200) {
+                window.location.reload();
             }
         };
     </script>
