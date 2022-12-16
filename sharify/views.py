@@ -11,6 +11,7 @@ from django.http import Http404
 from django.urls import reverse_lazy
 from django.views import generic
 import json
+from random import randint
 from .profiles import *
 from .search import *
 from .forms import *
@@ -471,3 +472,60 @@ class UpdateUserView(generic.UpdateView):
 
     def get_object(self):
         return self.request.user
+
+###########################################################################################
+#   Defining Views for Recommendations
+###########################################################################################
+
+#-----------------------------------------------------------------------------------------#
+def like_song(request: WSGIRequest):
+    song = Musicdata.objects.all().filter(track_id='6f807x0ima9a1j3VPbc7VN')[0]    # song selected from frontend
+    if song.pk not in request.user.liked_songs:
+        request.user.liked_songs.append(song.pk)
+        request.user.save()
+    return render(request, 'base/home.html', {})
+
+def unlike_song(request: WSGIRequest):  # option to unlike song to remove it from recommendation seeding
+    song = Musicdata.objects.all().filter(track_id='6f807x0ima9a1j3VPbc7VN')[0]    # song selected from frontend
+    if song.pk in request.user.liked_songs:
+        request.user.liked_songs.remove(song.pk)
+        request.user.save()
+    return render(request, 'base/home.html', {})
+
+def recommend_songs(request: WSGIRequest):
+    track_seeds = request.user.liked_songs
+    spotipy_controller = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
+    available_genre_seeds = spotipy_controller.recommendation_genre_seeds()['genres']
+    artist_seeds = []
+    genre_seeds = []
+    track = spotipy_controller.tracks(track_seeds)['tracks'][0]
+
+    for track in spotipy_controller.tracks(track_seeds)['tracks']:
+        for artist in track['artists']:
+            if artist['id'] not in artist_seeds:
+                artist_seeds.append(artist['id'])
+    
+    for artist in spotipy_controller.artists(artist_seeds)['artists']:
+        for genre in artist['genres']:
+            if genre in available_genre_seeds and genre not in genre_seeds:
+                genre_seeds.append(genre)
+
+    # random algorithm
+    seed_count = 0
+    track_seed_count = randint(1, 3)
+    seed_count += track_seed_count
+    artist_seed_count = randint(1, 5-seed_count-1)
+    seed_count += artist_seed_count
+    genre_seed_count = 5 - seed_count
+    true_artist_seeds = random.choices(artist_seeds, k=artist_seed_count)
+    true_genre_seeds = random.choices(genre_seeds, k=genre_seed_count)
+    true_track_seeds = random.choices(track_seeds, k=track_seed_count)
+
+    recommended_songs = []
+    for track in spotipy_controller.recommendations(seed_artists=true_artist_seeds, seed_genres=true_genre_seeds, seed_tracks=true_track_seeds)['tracks']:
+        recommended_songs.append(track['id'])
+
+    context = {
+        'tracks': recommended_songs
+    }
+    return render(request, 'search/recommendations.html', context)
