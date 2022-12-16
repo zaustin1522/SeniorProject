@@ -97,6 +97,9 @@
         {% with nested=True %}
             <select name="playlists" id="{{track.track_id}}" style="min-width: 100%; margin-top: 5px; height: 24px;" onchange="view_playlist(this)">
                 <option id="reset" value="reset" disabled selected>View Playlist</option>
+                {% if current_user.username == user.username or current_user.likes_are_public %}
+                    <option id="select-liked" playlist-id="liked" value="likes">Liked Songs</option>
+                {% endif %}
                 {% if current_user.username == user.username and current_user.profile is not None %}
                     <option id="refresh" value="refresh">Fetch from Spotify</option>
                 {% endif %}
@@ -105,6 +108,21 @@
                 {% endfor %}
             </select>
             <div style="max-height: 90%; overflow: auto; border-radius: 1.25rem;">
+                <table id="table-liked" style="display: flex; flex: 1 1 auto; width: 500px; max-width: 500px; min-height: 484px;" hidden="true">
+                    <tbody style="min-height: 100%;">
+                        {% for track in current_user.liked_songs.all %}
+                            {% with comments=track.comment_set.all %}
+                                <tr id="like-{{track.id}}" style="width: 500px; text-align: left; max-width: 500px; min-height: 100%;">
+                                    {% include 'items/mini_track.html' %}
+                                </tr>
+                            {% endwith %}
+                        {% empty %}
+                            <tr>
+                                <h1> Nobody here but us chickens! </h1>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
                 {% for playlist in current_user.playlist_set.all %}
                     <table id="table-{{playlist.id}}" style="display: flex; flex: 1 1 auto; width: 500px; max-width: 500px; min-height: 484px;" hidden="true">
                         <tbody style="min-height: 100%;">
@@ -150,7 +168,8 @@
 
 {% block scripts %}
     <script>
-        let commentHttp = new XMLHttpRequest;
+        const commentHttp = new XMLHttpRequest;
+        const likeHttp = new XMLHttpRequest();
 		var comment_username = ""
 		var comment_text = ""
 		var comment_target_id = ""
@@ -188,12 +207,37 @@
                     if (playlist_target_id == null) {
                         continue;
                     }
+                    console.log(playlist_target_id)
                     playlist = document.getElementById("table-" + playlist_target_id);
                     playlist.hidden = true;
                 }
                 playlist_target_id = playlist_option.getAttribute("playlist-id")
                 playlist = document.getElementById("table-" + playlist_target_id)
                 playlist.hidden = false
+            }
+        }
+        function like(track_id) {
+            likeHttp.open('GET', '/like_song/?track_id=' + track_id);
+            likeHttp.send(null);
+        }
+        function unlike(track_id) {
+            likeHttp.open('GET', '/unlike_song/?track_id=' + track_id);
+            likeHttp.send(null);
+        }
+        likeHttp.onload = () => {
+            response = likeHttp.response;
+            code = likeHttp.status;
+            if (code == 200) {
+                type = response.substring(0, response.indexOf("-"))
+                id = response.substring(response.indexOf("-") + 1)
+                if (type == "liked") {
+                    document.getElementById(response).hidden=false
+                    document.getElementById("unliked-" + id).hidden=true
+                }
+                else if (type == "unliked") {
+                    document.getElementById(response).hidden=false
+                    document.getElementById("liked-" + id).hidden=true
+                }
             }
         }
 

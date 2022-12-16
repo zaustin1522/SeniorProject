@@ -44,6 +44,7 @@ class User(AbstractUser):
     id = models.AutoField(primary_key=True)
     friends_are_public = models.BooleanField(default=True, blank=False, null=False)
     playlists_are_public = models.BooleanField(default=True, blank=False, null=False)
+    likes_are_public = models.BooleanField(default=True, blank=False, null=False)
     friends = models.JSONField(default=list)
     pending = models.JSONField(default=pending_default)
     profile = models.OneToOneField(SpotifyProfile, on_delete=models.CASCADE, null=True, blank=True)
