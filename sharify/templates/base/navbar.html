@@ -33,6 +33,11 @@
                     <li class="nav-item">
                         <a class="nav-link link text-black display-4" href="/todays_top_hits/">Today's Top Hits<br></a>
                     </li>
+                    {% if user.is_authenticated and user.liked_songs.all|length > 1 %}
+                        <li class="nav-item">
+                            <a class="nav-link link text-black display-4" href="/recommender/">Recommendations<br></a>
+                        </li>
+                    {% endif %}
                 </ul>
             </div>
             <div class="navbar-buttons section-btn">

@@ -47,7 +47,7 @@ class User(AbstractUser):
     friends = models.JSONField(default=list)
     pending = models.JSONField(default=pending_default)
     profile = models.OneToOneField(SpotifyProfile, on_delete=models.CASCADE, null=True, blank=True)
-    liked_songs = models.JSONField(default=list)
+    liked_songs = models.ManyToManyField(Musicdata)
 
 
 class Playlist(models.Model):

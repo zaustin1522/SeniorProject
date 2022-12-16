@@ -15,6 +15,7 @@
 
 {% block scripts %}
     <script>
+        const likeHttp = new XMLHttpRequest();
         function expand(elem) {
             if (document.getElementById("active")){
                 shrink(document.getElementById("active"))
@@ -33,6 +34,30 @@
             target.hidden = true;
             elem.style.setProperty("transform", "rotate(0deg)");
             elem.setAttribute("onclick", "expand(this)");
+        }
+        function like(track_id) {
+            likeHttp.open('GET', '/like_song/?track_id=' + track_id);
+            likeHttp.send(null);
+        }
+        function unlike(track_id) {
+            likeHttp.open('GET', '/unlike_song/?track_id=' + track_id);
+            likeHttp.send(null);
+        }
+        likeHttp.onload = () => {
+            response = likeHttp.response;
+            code = likeHttp.status;
+            if (code == 200) {
+                type = response.substring(0, response.indexOf("-"))
+                id = response.substring(response.indexOf("-") + 1)
+                if (type == "liked") {
+                    document.getElementById(response).hidden=false
+                    document.getElementById("unliked-" + id).hidden=true
+                }
+                else if (type == "unliked") {
+                    document.getElementById(response).hidden=false
+                    document.getElementById("liked-" + id).hidden=true
+                }
+            }
         }
     </script>
 {% endblock %}

@@ -473,27 +473,51 @@ class UpdateUserView(generic.UpdateView):
     def get_object(self):
         return self.request.user
 
+#-----------------------------------------------------------------------------------------#
+
 ###########################################################################################
 #   Defining Views for Recommendations
 ###########################################################################################
 
 #-----------------------------------------------------------------------------------------#
 def like_song(request: WSGIRequest):
-    song = Musicdata.objects.all().filter(track_id='6f807x0ima9a1j3VPbc7VN')[0]    # song selected from frontend
-    if song.pk not in request.user.liked_songs:
-        request.user.liked_songs.append(song.pk)
-        request.user.save()
-    return render(request, 'base/home.html', {})
+    user: MyUser = request.user
+    target_id = request.GET.get('track_id')
+    try:
+        song = Musicdata.objects.get(track_id=target_id)    # song selected from frontend
+    except Musicdata.DoesNotExist:
+        return HttpResponse("Track doesn't exist.", status=400)
+    if song not in user.liked_songs.all():
+        user.liked_songs.add(song)
+        user.save()
+    return HttpResponse("liked-" + target_id, status=200)
 
+#-----------------------------------------------------------------------------------------#
 def unlike_song(request: WSGIRequest):  # option to unlike song to remove it from recommendation seeding
-    song = Musicdata.objects.all().filter(track_id='6f807x0ima9a1j3VPbc7VN')[0]    # song selected from frontend
-    if song.pk in request.user.liked_songs:
-        request.user.liked_songs.remove(song.pk)
-        request.user.save()
-    return render(request, 'base/home.html', {})
+    user: MyUser = request.user
+    target_id = request.GET.get('track_id')
+    try:
+        song = Musicdata.objects.get(track_id=target_id)    # song selected from frontend
+    except Musicdata.DoesNotExist:
+        return HttpResponse("Track doesn't exist.", status=400)
+    if song in user.liked_songs.all():
+        user.liked_songs.remove(song)
+        user.save()
+    return HttpResponse("unliked-" + target_id, status=200)
 
+#-----------------------------------------------------------------------------------------#
 def recommend_songs(request: WSGIRequest):
-    track_seeds = request.user.liked_songs
+    if not request.user.is_authenticated:
+        return render(request, 'registration/login.html')
+    user: MyUser = request.user
+    track_seeds: list = []
+    for track in user.liked_songs.all():
+        track: Musicdata
+        track_seeds.append(track.track_id)
+    
+    if len(track_seeds) == 0:
+        return show_userprofile(request)
+
     spotipy_controller = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
     available_genre_seeds = spotipy_controller.recommendation_genre_seeds()['genres']
     artist_seeds = []
@@ -523,9 +547,17 @@ def recommend_songs(request: WSGIRequest):
 
     recommended_songs = []
     for track in spotipy_controller.recommendations(seed_artists=true_artist_seeds, seed_genres=true_genre_seeds, seed_tracks=true_track_seeds)['tracks']:
-        recommended_songs.append(track['id'])
+        scrape_album(track['album']['id'])
+        try:
+            song = Musicdata.objects.get(track_id = track['id'])
+        except Musicdata.DoesNotExist:
+            continue
+        recommended_songs.append((song, list(Comment.objects.filter(on_type = 'track').filter(comment_on_id = song.track_id).order_by('-posted_at'))))
 
+
+    # Return the id of up to 20 songs
+    results = [recommended_songs[i:i+2] for i in range(0, len(recommended_songs), 2)]
     context = {
-        'tracks': recommended_songs
+        'tracks': results
     }
     return render(request, 'search/recommendations.html', context)

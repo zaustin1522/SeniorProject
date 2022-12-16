@@ -33,7 +33,9 @@ urlpatterns = [
     path('save_playlist/', views.add_playlist_to_spotify, name='save_playlist'),
     path('refresh_playlist/', views.refresh_playlist, name='refresh_playlist'),
     path('get_playlists/', views.get_playlists, name='get_playlists'),
-    path('test_function', views.recommend_songs, name='test_function')
+    path('like_song/', views.like_song, name='like_song'),
+    path('unlike_song/', views.unlike_song, name='unlike_song'),
+    path('recommender/', views.recommend_songs, name='recommender'),
 ]
 
 #-----------------------------------------------------------------------------------------#
