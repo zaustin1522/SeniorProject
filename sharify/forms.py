@@ -45,8 +45,9 @@ class EditUserProfileForm(UserChangeForm):
     bio = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder' : 'Enter your bio'}))
     friends_are_public = forms.BooleanField(required=False, label="Public Friend List")
     playlists_are_public = forms.BooleanField(required=False, label="Public playlists")
+    likes_are_public = forms.BooleanField(required=False, label="Public likes")
     password = None
     
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'email', 'bio', 'friends_are_public', 'playlists_are_public']
+        fields = ['first_name', 'last_name', 'email', 'bio', 'friends_are_public', 'playlists_are_public', 'likes_are_public']
