@@ -9,11 +9,18 @@
             </div>
         </div>
     </a>
+    {% if user.is_authenticated and track in user.liked_songs.all %}
+        <img src="{% static 'images/like_red.png' %}" id="liked-{{track.track_id}}" onclick="unlike('{{track.track_id}}')" style="width:50px; position: absolute; right: 10px; top: 10px; border-radius: 18px;">
+        <img src="{% static 'images/can_like.png' %}" id="unliked-{{track.track_id}}" onclick="like('{{track.track_id}}')" hidden="true" style="width:50px; position: absolute; right: 10px; top: 10px; border-radius: 18px;">
+    {% elif user.is_authenticated %}
+        <img src="{% static 'images/like_red.png' %}" id="liked-{{track.track_id}}" onclick="unlike('{{track.track_id}}')" hidden="true" style="width:50px; position: absolute; right: 10px; top: 10px; border-radius: 18px;">
+        <img src="{% static 'images/can_like.png' %}" id="unliked-{{track.track_id}}" onclick="like('{{track.track_id}}')" style="width:50px; position: absolute; right: 10px; top: 10px; border-radius: 18px;">
+    {% endif %}
     {% if not nested %}
-        <img src="{% static 'images/down_button.png' %}" frame="{{track.track_id}}" onclick="expand(this)" style="position: absolute; right: 10px; top: 40px; border-radius: 25px; background-color: rgba(255, 255, 255, .5); max-width: 50px; aspect-ratio: 1/1;"/>
+        <img src="{% static 'images/down_button.png' %}" frame="{{track.track_id}}" onclick="expand(this)" style="position: absolute; right: 10px; bottom: 10px; border-radius: 25px; background-color: rgba(255, 255, 255, .5); max-width: 50px; aspect-ratio: 1/1;"/>
         {% include 'social/track_card.html' %}
     {% else %}
-        <img src="{% static 'images/down_button.png' %}" frame="{{playlist.id}}-{{track.track_id}}" onclick="expand(this)" style="position: absolute; right: 10px; top: 40px; border-radius: 25px; background-color: rgba(255, 255, 255, .5); max-width: 50px; aspect-ratio: 1/1;"/>
+        <img src="{% static 'images/down_button.png' %}" frame="{{playlist.id}}-{{track.track_id}}" onclick="expand(this)" style="position: absolute; right: 10px; bottom: 10px; border-radius: 25px; background-color: rgba(255, 255, 255, .5); max-width: 50px; aspect-ratio: 1/1;"/>
         {% include 'social/track_card.html' %}
     {% endif %}
 </td>

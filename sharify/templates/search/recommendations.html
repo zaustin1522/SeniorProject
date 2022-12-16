@@ -40,14 +40,69 @@
 		<div style="position: relative; z-index: 2;">
 			<h1 style="color: white;">User Based Recommendations</h1>
 			<br/>
-			<div class="flex-container">
-			{% for track in tracks %}
-				<div>
-					<iframe src="https://open.spotify.com/embed/track/{{ track }}" width="300" height="380" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
-				</div>
-			{% endfor %}
+			<div class="flex-container" style="margin-bottom: 350px;">
+				<table>
+					{% for row in tracks %}
+					<tr >
+						{% for entry in row %}
+							{% with track=entry.0 comments=entry.1%}
+								{% include 'items/mini_track.html' %}
+							{% endwith %}
+						{% endfor %}
+					</tr>
+					{% endfor %}
+				</table>
 			</div>
 		</div>
 	{% endif %}
 </section>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        const likeHttp = new XMLHttpRequest();
+        function expand(elem) {
+            if (document.getElementById("active")){
+                shrink(document.getElementById("active"))
+            }
+            target_id = elem.getAttribute("frame");
+            target = document.getElementById(target_id);
+            target.hidden = false;
+            elem.style.setProperty("transform", "rotate(180deg)");
+            elem.setAttribute("onclick", "shrink(this)");
+            elem.setAttribute("id", "active");
+        }
+        function shrink(elem) {
+            elem.removeAttribute("id");
+            target_id = elem.getAttribute("frame");
+            target = document.getElementById(target_id);
+            target.hidden = true;
+            elem.style.setProperty("transform", "rotate(0deg)");
+            elem.setAttribute("onclick", "expand(this)");
+        }
+        function like(track_id) {
+            likeHttp.open('GET', '/like_song/?track_id=' + track_id);
+            likeHttp.send(null);
+        }
+        function unlike(track_id) {
+            likeHttp.open('GET', '/unlike_song/?track_id=' + track_id);
+            likeHttp.send(null);
+        }
+        likeHttp.onload = () => {
+            response = likeHttp.response;
+            code = likeHttp.status;
+            if (code == 200) {
+                type = response.substring(0, response.indexOf("-"))
+                id = response.substring(response.indexOf("-") + 1)
+                if (type == "liked") {
+                    document.getElementById(response).hidden=false
+                    document.getElementById("unliked-" + id).hidden=true
+                }
+                else if (type == "unliked") {
+                    document.getElementById(response).hidden=false
+                    document.getElementById("liked-" + id).hidden=true
+                }
+            }
+        }
+    </script>
 {% endblock %}
