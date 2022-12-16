@@ -28,6 +28,14 @@
                             <p style="margin: 0 auto;">Overwrite</p>
                         </a>
                     </div>
+                    {% if playlist.spotify_id %}
+                    <div style="width: 75px; display: flex;">
+                        <a onclick="refresh_playlist('{{playlist.id}}');" style="margin: 0 auto;">
+                            <img src="{% static 'images/refresh_button.png' %}" style="max-width: 30px; margin: 0 auto;">
+                            <p style="margin: 0 auto;">Refresh</p>
+                        </a>
+                    </div>
+                    {% endif %}
                 </div>
             {% endif %}
             <div style="width: 50px; display: flex;">
@@ -161,6 +169,14 @@
                 playlistHttp.send(null);
             }
         }
+        function refresh_playlist(target_id) {
+            playlist_id = target_id;
+            if (confirm("Are you sure you want to refresh this playlist?\nThis version will be lost and the version on Spotify will take its place.")) {
+                let url = '/refresh_playlist/?playlist_id=' + playlist_id;
+                playlistHttp.open('GET', url);
+                playlistHttp.send(null);
+            }
+        }
 
         playlistHttp.onload = () => {
             stat = playlistHttp.status;
@@ -170,6 +186,9 @@
                 }
                 else if (playlistHttp.response == "safe rename") {
                     alert("A playlist by that name already exists on your Spotify account.\nPlease rename either playlist or select another save option to merge or overwrite.");
+                }
+                else if (playlistHttp.response == "refreshed") {
+                    window.location.reload()
                 }
                 else {
                     track = document.getElementById(playlist_id + '-' + track_id);
