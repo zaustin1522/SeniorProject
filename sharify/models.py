@@ -13,6 +13,7 @@ class Musicdata(models.Model):
     album_release_date = models.IntegerField()
     duration_ms  = models.IntegerField()
     album_liason = models.BooleanField(default=False)
+    artist_ids = models.JSONField(default=list)
 
     def __str__(self):
         return "\"" + self.track_name + "\" by " + self.artist

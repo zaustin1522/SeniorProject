@@ -506,47 +506,52 @@ def unlike_song(request: WSGIRequest):  # option to unlike song to remove it fro
     return HttpResponse("unliked-" + target_id, status=200)
 
 #-----------------------------------------------------------------------------------------#
+def get_artist_ids(track: Musicdata, user: MyUser):
+    sp = spotipy.Spotify(auth=get_access_token(user))
+    fresh_data = sp.album_tracks(track.album_id)
+    for fresh_track in fresh_data['items']:
+        artist_ids: list = []
+        for artist in fresh_track['artists']:
+            artist_ids.append(artist['id'])
+        try:
+            existing_track = Musicdata.objects.get(track_id=fresh_track['id'])
+            existing_track.artist_ids = artist_ids
+            existing_track.save()
+        except Musicdata.DoesNotExist:
+            continue
+    refreshed_track = Musicdata.objects.get(track_id = track.track_id)
+    return refreshed_track.artist_ids
+
+#-----------------------------------------------------------------------------------------#
 def recommend_songs(request: WSGIRequest):
     if not request.user.is_authenticated:
         return render(request, 'registration/login.html')
     user: MyUser = request.user
     track_seeds: list = []
+    artists: list = []
     for track in user.liked_songs.all():
         track: Musicdata
         track_seeds.append(track.track_id)
+        if len(track.artist_ids) == 0:
+            artists.extend(get_artist_ids(track, user))
+        else:
+            artists.extend(track.artist_ids)
+    
+    artist_seed_dict = {artist_id: artists.count(artist_id) for artist_id in artists}
+    sorted_artist_seeds = dict(sorted(artist_seed_dict.items(), key=lambda item: item[1], reverse=True))
+    artist_seeds = list(sorted_artist_seeds.keys())[:1]
     
     if len(track_seeds) == 0:
         return show_userprofile(request)
+    track_seeds=track_seeds[:10]
+    random.shuffle(track_seeds)
+    track_seeds=track_seeds[:4]
+
 
     spotipy_controller = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
-    available_genre_seeds = spotipy_controller.recommendation_genre_seeds()['genres']
-    artist_seeds = []
-    genre_seeds = []
-    track = spotipy_controller.tracks(track_seeds)['tracks'][0]
-
-    for track in spotipy_controller.tracks(track_seeds)['tracks']:
-        for artist in track['artists']:
-            if artist['id'] not in artist_seeds:
-                artist_seeds.append(artist['id'])
-    
-    for artist in spotipy_controller.artists(artist_seeds)['artists']:
-        for genre in artist['genres']:
-            if genre in available_genre_seeds and genre not in genre_seeds:
-                genre_seeds.append(genre)
-
-    # random algorithm
-    seed_count = 0
-    track_seed_count = randint(1, 3)
-    seed_count += track_seed_count
-    artist_seed_count = randint(1, 5-seed_count-1)
-    seed_count += artist_seed_count
-    genre_seed_count = 5 - seed_count
-    true_artist_seeds = random.choices(artist_seeds, k=artist_seed_count)
-    true_genre_seeds = random.choices(genre_seeds, k=genre_seed_count)
-    true_track_seeds = random.choices(track_seeds, k=track_seed_count)
 
     recommended_songs = []
-    for track in spotipy_controller.recommendations(seed_artists=true_artist_seeds, seed_genres=true_genre_seeds, seed_tracks=true_track_seeds)['tracks']:
+    for track in spotipy_controller.recommendations(seed_artists=artist_seeds, seed_tracks=track_seeds)['tracks']:
         scrape_album(track['album']['id'])
         try:
             song = Musicdata.objects.get(track_id = track['id'])
