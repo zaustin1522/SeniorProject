@@ -60,7 +60,7 @@ def find_track_by_name(track: str, user: MyUser):
 
     if len(resp) < 12:
         if pull_more_tracks(track, 12-len(resp), user):
-            query = Musicdata.objects.filter(track_name__icontains = track)
+            query = Musicdata.objects.filter(track_name__istartswith = track)
             resp = update_images(list(query)[:50])
             # Randomize to get different results each time
             random.shuffle(resp)
@@ -106,7 +106,7 @@ def pull_more_tracks(query: str, minimum: int, user: MyUser):
 
 #-----------------------------------------------------------------------------------------#
 def find_album_by_name(album_name: str, user: MyUser):
-    query = Musicdata.objects.filter(album_liason = True).filter(album_name__icontains = album_name)
+    query = Musicdata.objects.filter(album_liason = True).filter(album_name__istartswith = album_name)
     resp = list(query)
     random.shuffle(resp)
     resp = resp[:12]
@@ -114,7 +114,7 @@ def find_album_by_name(album_name: str, user: MyUser):
     if len(resp) < 12:
         logmessage(msg="Not enough albums matched.")
         if pull_more_albums(album_name, user):
-            query = Musicdata.objects.filter(album_liason = True).filter(album_name__icontains = album_name)
+            query = Musicdata.objects.filter(album_liason = True).filter(album_name__istartswith = album_name)
             resp = list(query)
             random.shuffle(resp)
             resp = resp[:12]
