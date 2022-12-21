@@ -1,24 +1,4 @@
 {% load static %}
-{% block style %}
-    <style>
-        .marqueeBox {
-            width: 282px;
-            overflow: hidden;
-            line-height: 30px;
-            padding: 5px;
-            position: relative;
-        }
-        .marqueeBox span {
-            position: absolute;
-            white-space: nowrap;
-            transform: translateX(0);
-            transition: 1s;
-        }
-        .marqueeBox:hover span {
-            transform: translateX(calc(282px - 100%));
-        }
-    </style>
-{% endblock %}
 
 <td id="{{playlist.id}}-{{track.track_id}}" style="position: relative; vertical-align:top; border: 5px solid rgba(0,0,0,0); height: 100%; min-height: 100%;">
     <div style="display: flex; flex-direction: row; min-width: 500px; max-width: 500px; max-height: 125px; min-height: 125px; padding: 12px; border-radius: 1.25rem; background-color: rgba(255,255,255,.25);">

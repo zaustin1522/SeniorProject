@@ -3,6 +3,27 @@
     Sharify - {{ track.track_name }}
 {% endblock %}
 
+{% block style %}
+    <style>
+        .marqueeBox {
+            width: 282px;
+            overflow: hidden;
+            line-height: 30px;
+            padding: 5px;
+            position: relative;
+        }
+        .marqueeBox span {
+            position: absolute;
+            white-space: nowrap;
+            transform: translateX(0);
+            transition: 1s;
+        }
+        .marqueeBox:hover span {
+            transform: translateX(calc(282px - 100%));
+        }
+    </style>
+{% endblock %}
+
 {% block content %}
 <section data-bs-version="5.1" class="section form2 cid-tjoJwPWkFc" id="form02-2" style="width: 100vw;">
     <div class="overlay" style="opacity: 0.7; background-color: rgb(22, 8, 48);"></div>
