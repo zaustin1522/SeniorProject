@@ -5,6 +5,7 @@
         <div style="flex-direction: column; margin: auto; margin-left: 24px; margin-right: 70px; max-height: 100px; overflow-y: auto;">
             <h4 style="font-weight: bolder;">{{track.track_name}}</h4>
             <h6>{{track.artist}}</h6>
+            <h6>({{track.album_name}})</h6>
         </div>
     </div>
     {% if user.is_authenticated and track in user.liked_songs.all %}
