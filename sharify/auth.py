@@ -17,7 +17,6 @@ from django.shortcuts import redirect
 from dotenv import load_dotenv
 from spotipy.oauth2 import SpotifyClientCredentials, SpotifyOAuth
 
-from sharify.log import logmessage
 from sharify.models import SpotifyProfile
 from sharify.models import User as MyUser
 
@@ -96,7 +95,6 @@ def link_spotify(request: WSGIRequest):
                 token_info = token_info
             )
             user.save()
-            logmessage(type="LINKED", msg=user.username+" connected Spotify ID "+spotify_id)
         return redirect('/userprofile/')        # Redirect to User Profile.
 
     # If that all failed, get authorization from Spotify
@@ -114,7 +112,6 @@ def unlink_spotify(request: WSGIRequest):
             current_user.profile = None
             current_user.save()
             profile.delete()
-            logmessage(type="UNLINKED", msg=current_user.username+" disconnected Spotify ID "+spotify_id)
         return redirect('/userprofile/')
     return redirect('/')
 

@@ -45,7 +45,6 @@
     }
 
     playlistHttp.onload = () => {
-        console.log('DONE: ', playlistHttp.status);
         alert(playlistHttp.response);
         if (playlistHttp.status == 200) {
             target = document.getElementById(playlist_track_id + "-" + playlist_target_id);

@@ -29,7 +29,6 @@
     }
 
     commentHttp.onload = () => {
-        console.log('DONE: ', commentHttp.status);
         if (commentHttp.status == 201) {
             var comment_box = document.getElementById("comments-on-" + comment_target_id)
             var new_comment = document.createElement("div");

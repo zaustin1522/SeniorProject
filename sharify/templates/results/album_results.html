@@ -38,10 +38,7 @@
                 shrink(document.getElementById("active"))
             }
             target_id = elem.getAttribute("frame");
-            console.log("ID: " + target_id);
-            console.log("source: " + elem);
             target = document.getElementById(target_id);
-            console.log("target: " + target);
             target.hidden = false;
             elem.style.setProperty("transform", "rotate(180deg)");
             elem.setAttribute("onclick", "shrink(this)");

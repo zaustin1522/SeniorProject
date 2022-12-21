@@ -47,7 +47,6 @@ def scrape_track(track: json):
         duration_ms  = track['duration_ms'],
         image_url = track['album']['images'][0]['url']
     )
-    logmessage(type = "ADD TRACK", msg = str(new_track))
 
 #-----------------------------------------------------------------------------------------#
 def scrape_album(album_id: str):
@@ -61,7 +60,6 @@ def scrape_album(album_id: str):
             track_ids.append(track['id'])
     if len(track_ids) > 0:
         tracks: json = spotipy_controller.tracks(tracks=track_ids)
-        logmessage(type = "SCRAPE", msg = "Found some tracks to add!")
         for track in tracks['tracks']:
             scrape_track(track)
     album_liason_service(album_id)
@@ -94,6 +92,5 @@ def update_images(tracks: list):
         if track.image_url == "":
             track.image_url = image_set[track.track_id]
             track.save()
-            logmessage(type="SCRAPE", msg="Updated the image for " + str(track))
     return tracks
 

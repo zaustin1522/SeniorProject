@@ -137,27 +137,21 @@ def get_user(request: WSGIRequest):
 def show_userprofile(request: WSGIRequest):
     username = request.GET.get('username', None)
     if username is None:
-        logmessage(type = "PROFILE", msg = "No username specified: assuming " + str(request.user))
         return show_profile_for(request, request.user)
     findUser: MyUser = MyUser.objects.filter(username__iexact = username).first()
     if findUser is None:
-        logmessage(type = "PROFILE", msg = "No user found matching " + username + ": assuming " + str(request.user))
         return show_profile_for(request, request.user)
-    logmessage(type = "PROFILE", msg = "User " + username + " found: Displaying profile...")
     return show_profile_for(request, findUser)
 
 #-----------------------------------------------------------------------------------------#
 def show_track(request: WSGIRequest):
     track_id = request.GET.get('id', None)
     if track_id is None:
-        logmessage(type = "TRACK", msg = "No id specified: redirecting to track browse.")
         return get_track(request)
     try:
         track: Musicdata = Musicdata.objects.get(track_id = track_id)
     except Musicdata.DoesNotExist:
-        logmessage(type = "TRACK", msg = "Invalid id specified: redirecting to track browse.")
         return get_track(request)
-    logmessage(type = "TRACK", msg = "Track " + str(track) + " found: Displaying...")
     return render(request, 'items/view_track.html', {
         'track': track
     })
@@ -442,24 +436,20 @@ def get_playlists(request: WSGIRequest):
 #-----------------------------------------------------------------------------------------#
 def manage_playlist(request: WSGIRequest):
     if not request.user.is_authenticated:
-        logmessage(msg="user isn't logged in!")
         return render(request, 'base/home.html')
 
     user: MyUser = request.user
     playlist_id = request.GET.get("playlist_id")
     if playlist_id is None:
-        logmessage(msg="did not specify playlist id")
         return render(request, 'base/home.html')
 
     try:
         playlist = Playlist.objects.get(id = playlist_id)
     except Playlist.DoesNotExist:
-        logmessage(msg="couldn't find playlist of id " + playlist_id)
         return render(request, 'base/home.html')
     
     playlist_user = playlist.user
     if user.username != playlist_user.username:
-        logmessage(msg="playlist belongs to " + user.username + ", which isn't " + playlist_user.username)
         return render(request, 'base/home.html')
     
     return render(request, 'items/view_playlist.html', {"playlist": playlist})

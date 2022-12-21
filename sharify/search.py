@@ -12,7 +12,6 @@ import random
 from urllib.parse import quote
 import requests
 from sharify.auth import get_access_token
-from sharify.log import logmessage
 
 from sharify.models import Comment, Musicdata
 from sharify.models import User as MyUser
@@ -112,7 +111,6 @@ def find_album_by_name(album_name: str, user: MyUser):
     resp = resp[:12]
 
     if len(resp) < 12:
-        logmessage(msg="Not enough albums matched.")
         if pull_more_albums(album_name, user):
             query = Musicdata.objects.filter(album_liason = True).filter(album_name__istartswith = album_name)
             resp = list(query)
@@ -140,17 +138,14 @@ def pull_more_albums(query: str, user: MyUser):
         'type': 'album',
         'market': 'US'
     }
-    logmessage(msg="Sending request...")
     response = requests.get('https://api.spotify.com/v1/search', params=params, headers=headers)
 
     if response.status_code != 200:
-        logmessage(msg="Pulling didn't work.")
         return False
     else:
         album_json: json = json.loads(response.content)
         for album in album_json['albums']['items']:
             if Musicdata.objects.filter(album_id = album['id']).count() == 0:
-                logmessage(msg="Gotta scrape!")
                 scrape_album(album['id'])
     return True
 
