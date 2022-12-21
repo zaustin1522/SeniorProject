@@ -2177,13 +2177,12 @@ a {
 }
 
 .marqueeBox {
-  width: 282px;
   min-height: 36px;
   max-width: 282px;
   overflow: hidden;
   position: relative;
   font-family: "Urbanist", sans-serif; 
-  font-weight: bolder; 
+  font-weight: 900; 
   font-size: 24px; 
   color: white;
 }
@@ -2191,8 +2190,8 @@ a {
   white-space: nowrap;
   position: absolute;
   transform: translateX(0); 
-  transition: 1s;
+  transition: 2.5s;
 }
 .marqueeBox:hover span {
-  transform: translateX(calc(282px - 100%));
+  transform: translateX(calc(max(282px, 100%) - 100%));
 }
