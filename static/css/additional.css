@@ -2178,9 +2178,9 @@ a {
 
 .marqueeBox {
   width: 282px;
+  min-height: 36px;
   max-width: 282px;
   overflow: hidden;
-  padding: 5px;
   position: relative;
   font-family: "Urbanist", sans-serif; 
   font-weight: bolder; 
