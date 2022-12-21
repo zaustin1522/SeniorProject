@@ -51,7 +51,7 @@ def find_albums(artist, from_year = None, to_year = None):
 
 #-----------------------------------------------------------------------------------------#
 def find_track_by_name(track: str, user: MyUser):
-    query = Musicdata.objects.filter(track_name__icontains = track)
+    query = Musicdata.objects.filter(track_name__istartswith = track)
     resp = list(query)
     random.shuffle(resp)
     resp = update_images(resp[:50])
