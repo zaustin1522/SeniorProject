@@ -2194,5 +2194,5 @@ a {
   transition: 2.5s;
 }
 .marqueeBox:hover span {
-  transform: translateX(calc(max(282px, 100%) - 100%));
+  transform: translateX(calc(min(282px, 100%) - 100%));
 }
