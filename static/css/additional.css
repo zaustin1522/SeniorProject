@@ -2182,12 +2182,12 @@ a {
   max-width: 282px;
   overflow: hidden;
   position: relative;
-  font-family: "Urbanist", sans-serif; 
-  font-weight: 900; 
-  font-size: 24px; 
   color: white;
 }
 .marqueeBox span {
+  font-family: "Urbanist", sans-serif; 
+  font-weight: bolder; 
+  font-size: 24px; 
   white-space: nowrap;
   position: absolute;
   transform: translateX(0); 
