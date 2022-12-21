@@ -2183,12 +2183,13 @@ a {
   padding: 5px;
   position: relative;
   font-family: "Urbanist", sans-serif; 
-  font-weight: 700; 
+  font-weight: bolder; 
   font-size: 24px; 
   color: white;
 }
 .marqueeBox span {
   white-space: nowrap;
+  position: absolute;
   transform: translateX(0); 
   transition: 1s;
 }
