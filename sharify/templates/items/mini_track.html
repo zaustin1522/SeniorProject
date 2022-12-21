@@ -4,9 +4,21 @@
     <div style="display: flex; flex-direction: row; min-width: 500px; max-width: 500px; max-height: 125px; min-height: 125px; padding: 12px; border-radius: 1.25rem; background-color: rgba(255,255,255,.25);">
         <img src="{{track.image_url}}" style="max-width: 100px; border-radius: 1rem; aspect-ratio: 1/1;"/>
         <div style="flex-direction: column; margin: auto; margin-left: 24px; margin-right: 70px; max-height: 100px;">
-            <div class="marqueeBox"><span>{{track.track_name}}</span></div>
-            <h6>{{track.artist}}</h6>
-            <h6 style="margin-bottom: 0;">({{track.album_name}})</h6>
+            <div class="marqueeBox">
+                <span>
+                    {{track.track_name}}
+                </span>
+            </div>
+            <div class="marqueeBox" style="min-height: 16px;">
+                <span style="font-weight: 400; font-size: 16px;">
+                    {{track.artist}}
+                </span>
+            </div>
+            <div class="marqueeBox" style="min-height: 16px;">
+                <span style="font-weight: 400; font-size: 16px;">
+                    {{track.album_name}}
+                </span>
+            </div>
         </div>
     </div>
     {% if user.is_authenticated and track in user.liked_songs.all %}
