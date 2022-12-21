@@ -2191,7 +2191,7 @@ a {
   white-space: nowrap;
   position: absolute;
   transform: translateX(0); 
-  transition: linear 4s;
+  transition: linear calc(calc(1.5s / 282px) * calc(100% - 282px));
 }
 .marqueeBox:hover span {
   transform: translateX(calc(min(282px, 100%) - 100%));
