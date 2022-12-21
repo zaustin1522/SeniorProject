@@ -1,14 +1,12 @@
 {% load static %}
 <td id="{{playlist.id}}-{{track.track_id}}" style="position: relative; vertical-align:top; border: 5px solid rgba(0,0,0,0); height: 100%; min-height: 100%;">
-    <a href="/track/?id={{track.track_id}}" target="_blank" style="color:white;">
-        <div style="display: flex; flex-direction: row; min-width: 500px; max-width: 500px; max-height: 125px; min-height: 125px; padding: 12px; border-radius: 1.25rem; background-color: rgba(255,255,255,.25);">
-            <img src="{{track.image_url}}" style="max-width: 100px; border-radius: 1rem; aspect-ratio: 1/1;"/>
-            <div style="flex-direction: column; margin: auto; margin-left: 24px; margin-right: 70px; max-height: 100px; overflow-y: auto;">
-                <h4 style="font-weight: bolder;">{{track.track_name}}</h4>
-                <h6>{{track.artist}}</h6>
-            </div>
+    <div style="display: flex; flex-direction: row; min-width: 500px; max-width: 500px; max-height: 125px; min-height: 125px; padding: 12px; border-radius: 1.25rem; background-color: rgba(255,255,255,.25);">
+        <img src="{{track.image_url}}" style="max-width: 100px; border-radius: 1rem; aspect-ratio: 1/1;"/>
+        <div style="flex-direction: column; margin: auto; margin-left: 24px; margin-right: 70px; max-height: 100px; overflow-y: auto;">
+            <h4 style="font-weight: bolder;">{{track.track_name}}</h4>
+            <h6>{{track.artist}}</h6>
         </div>
-    </a>
+    </div>
     {% if user.is_authenticated and track in user.liked_songs.all %}
         <img src="{% static 'images/like_red.png' %}" id="liked-{{track.track_id}}" onclick="unlike('{{track.track_id}}')" style="width:50px; position: absolute; right: 10px; top: 10px; border-radius: 18px;">
         <img src="{% static 'images/can_like.png' %}" id="unliked-{{track.track_id}}" onclick="like('{{track.track_id}}')" hidden="true" style="width:50px; position: absolute; right: 10px; top: 10px; border-radius: 18px;">
