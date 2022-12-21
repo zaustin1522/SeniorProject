@@ -2178,6 +2178,7 @@ a {
 
 .marqueeBox {
   min-height: 36px;
+  width: 282px;
   max-width: 282px;
   overflow: hidden;
   position: relative;
