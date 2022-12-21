@@ -2176,7 +2176,7 @@ a {
   color: #353535;
 }
 
-div.marqueeBox {
+.marqueeBox {
   width: 282px;
   max-width: 282px;
   overflow: hidden;
@@ -2187,11 +2187,11 @@ div.marqueeBox {
   font-size: 24px; 
   color: white;
 }
-div.marqueeBox span {
+.marqueeBox span {
   white-space: nowrap;
   transform: translateX(0); 
   transition: 1s;
 }
-div.marqueeBox:hover span {
+.marqueeBox:hover span {
   transform: translateX(calc(282px - 100%));
 }
