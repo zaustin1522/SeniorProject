@@ -7,16 +7,20 @@
     <style>
         .marqueeBox {
             width: 282px;
+            max-width: 282px;
             overflow: hidden;
             line-height: 30px;
             padding: 5px;
             position: relative;
         }
         .marqueeBox span {
-            position: absolute;
-            white-space: nowrap;
-            transform: translateX(0);
+            white-space: nowrap; 
+            transform: translateX(0); 
             transition: 1s;
+            font-weight: bolder; 
+            font-size: 24px; 
+            font-family: Urbanist, sans-serif; 
+            color: white;
         }
         .marqueeBox:hover span {
             transform: translateX(calc(282px - 100%));
