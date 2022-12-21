@@ -5,26 +5,6 @@
 
 {% block style %}
     <style>
-        .marqueeBox {
-            width: 282px;
-            max-width: 282px;
-            overflow: hidden;
-            line-height: 30px;
-            padding: 5px;
-            position: relative;
-        }
-        .marqueeBox span {
-            white-space: nowrap !important; 
-            transform: translateX(0) !important; 
-            transition: 1s !important;
-            font-family: "Urbanist", sans-serif !important; 
-            font-weight: 700 !important; 
-            font-size: 24px !important; 
-            color: white !important;
-        }
-        .marqueeBox:hover span {
-            transform: translateX(calc(282px - 100%));
-        }
     </style>
 {% endblock %}
 
