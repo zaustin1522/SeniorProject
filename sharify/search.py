@@ -58,7 +58,7 @@ def find_track_by_name(track: str, user: MyUser):
     resp = resp[:12]
 
     if len(resp) < 12:
-        if pull_more_tracks(track, 12-len(resp), user):
+        if pull_more_tracks(track, user):
             query = Musicdata.objects.filter(track_name__icontains = track)
             resp = update_images(list(query)[:50])
             # Randomize to get different results each time
@@ -76,7 +76,9 @@ def find_track_by_name(track: str, user: MyUser):
     return results
 
 #-----------------------------------------------------------------------------------------#
-def pull_more_tracks(query: str, minimum: int, user: MyUser):
+def pull_more_tracks(query: str, user: MyUser):
+    if not user.is_authenticated:
+        return False
     headers = {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
