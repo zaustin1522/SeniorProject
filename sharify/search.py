@@ -102,7 +102,7 @@ def pull_more_tracks(query: str, user: MyUser):
             try:
                 Musicdata.objects.get(track_id = track['id'])
             except Musicdata.DoesNotExist:
-                scrape_album(track['album']['id'])
+                scrape_track(track['id'])
         return True
 
 #-----------------------------------------------------------------------------------------#
